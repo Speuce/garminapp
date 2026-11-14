@@ -131,11 +131,15 @@ The normal Instinct release was sideloaded and its SHA-256 verified against the
 compiled file; physical-device behavior and overnight battery use remain to test.
 
 The experimental PCA study is archived in [docs/pca/report.html](docs/pca/report.html).
-It compares the current detector with PCA and impact-evidence filters, including
-harder synthetic arm-only motions. Neither experimental filter meets the target
-across all tested cohorts, so the watch detector remains unchanged. Python
-prototypes and their tests stay local; the report, protocol and results are saved
-on `codex/pca-jump-validation`, separately from the demo branch.
+It compares the original detector with PCA and impact-evidence filters, including
+harder synthetic arm-only motions. Neither filter meets the target across all
+tested cohorts. At the user's request, `codex/pca-jump-validation` now ports the
+PCA-only filter to Monkey C for physical-device testing: PC3 must explain at least
+0.6% of variance over the candidate plus eight earlier samples. A fixed 74-sample
+buffer and a 3x3 positive-semidefinite check implement the eigenvalue threshold.
+The impact filter is not included. The dismissal target remains five. Python
+prototypes stay local; simulator testing of this port is explicitly skipped.
+The demo branch `more-forerunner` remains on `97c29c3` for rollback.
 
 ## Build and test
 
