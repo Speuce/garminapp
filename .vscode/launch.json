@@ -4,7 +4,7 @@
         {
             "type": "monkeyc",
             "request": "launch",
-            "name": "Run Jumping App",
+            "name": "Run JumpStart",
             "stopAtLaunch": false,
             "device": "fenix7pro"
         }

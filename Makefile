@@ -5,8 +5,8 @@ SDK_DIR ?= $(HOME)/Library/Application Support/Garmin/ConnectIQ/Sdks/connectiq-s
 DEVICE ?= instinct2
 KEY ?= $(HOME)/Documents/developer_key
 WATCH ?= /Volumes/GARMIN
-APP := bin/JUMPING.prg
-TEST_APP := bin/jumping-test.prg
+APP := bin/JumpStart.prg
+TEST_APP := bin/JumpStart-tests.prg
 
 build:
 	"$(SDK_DIR)/bin/monkeyc" -f monkey.jungle -d $(DEVICE) -y "$(KEY)" -o $(APP) -l 3 -w

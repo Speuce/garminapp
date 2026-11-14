@@ -1,68 +1,75 @@
-﻿# Jumping Jack Counter
+# JumpStart alarm
 
-A Garmin Connect IQ watch app that counts jumping jacks from the wrist accelerometer.
-Target device is the fenix 7 Pro (`fenix7pro`); data so far was gathered on an Instinct 2 (`instinct2`), left wrist.
+Connect IQ alarm app for Instinct 2 (`instinct2`) and fenix 7 Pro (`fenix7pro`).
+This integration combines `main`'s alarm scheduling with the adaptive Monkey C
+jumping-jack detector. Twenty confirmed jumping jacks dismiss a ringing alarm.
 
-While recording, the app saves a training activity whose FIT file contains the raw
-accelerometer stream (via `SensorLogging`) and shows a live rep count. BACK adds a lap marker.
+## Using the alarm
 
-## Detector
+START opens the menu. Set time / Enabled controls the daily alarm. **Test ring**
+starts a preview immediately (BACK cancels it without changing the daily alarm).
+**Test in 5 min** arms a one-off alarm; completion restores the daily settings.
+The actual alarm consumes START/BACK presses until the rep target is reached.
+If sensor registration fails, the screen reports that and allows BACK to exit.
 
-`source/RepCounter.mc` runs the adaptive detector on the watch. Each callback feeds
-calibrated X/Y/Z samples in order at the requested 25 Hz. The counter smooths all
-three axes, finds candidate movements from a rise and a return relative to the
-current peak, and checks movement duration, X/Z range, vector magnitude and shape.
-Candidate timeouts and repetition spacing adapt to the observed cadence.
+Keep the watch still briefly when ringing starts, then do jumping jacks. The
+counter confirms three cycles before displaying the initial three reps. Sensor
+sampling runs at 25 Hz only while the ring screen is visible and stops on exit.
+There is no timer-generated rep count and no FIT activity is recorded by the alarm.
 
-Three qualifying cycles confirm a run; the initial count then advances by three.
-Subsequent qualifying cycles add one. Pauses clear pending confirmation, and the
-last three accepted movement scores set the continuation strength threshold.
-The first 20 samples estimate resting gravity only when they appear stationary;
-otherwise the counter keeps the nominal milli-g scale. All state has fixed size,
-with no per-sample arrays or growing sample history.
+If the app is closed, Connect IQ's background service displays a prompt to open
+it; accept that prompt to enter the jumping-jack screen. This is the Garmin
+[background wake API](https://developer.garmin.com/connect-iq/api-docs/Toybox/Background.html#requestApplicationWake-instance_function),
+not an unattended native system alarm. Foreground ringing is checked each second
+on the home screen. Use the foreground flow for the first hardware test.
 
-The checked-in Monkey C simulator tests replay both labelled XYZ recordings:
-20/20 normal jacks and zero counts for watch checks/marching. They also verify
-the count increment at every sample against the reference, weak returns, changing
-cadence, calibration, pauses and timeout recovery. These recordings cover one
-left-wrist Instinct 2 user; they do not establish accuracy for every movement style.
+## Detector and validation
 
-## Build, test and install
+`source/RepCounter.mc` smooths all three axes, detects peak-relative returns, and
+checks duration, X/Z range, vector magnitude and shape. Candidate timeouts and
+spacing adapt to cadence. Three qualifying cycles confirm a run; further cycles
+add one. Pauses reset pending confirmation. State has fixed size.
 
-Requires Java, a Connect IQ SDK with the device packages, and a signing key (excluded from version control).
+The original labelled recordings remain unchanged: 20/20 normal jacks and zero
+counts for watch checks/marching. These cover one left-wrist Instinct 2 user,
+not population-wide accuracy. The Monkey C tests include per-sample parity,
+weak returns, cadence changes, calibration, pauses, recovery, exact alarm
+completion, late callbacks, fresh sessions and one-off alarm scheduling.
 
-macOS (`Makefile`, defaults to `instinct2`; override with `DEVICE=fenix7pro`):
+`recordings/` contains the original FIT files and labels. `test/RecordedSamples.mc`
+contains their XYZ samples in compiler-sized blocks and is excluded from normal
+builds. The FIT accelerometer timestamps/offsets are invalid. For simulator FIT
+playback, local copies in `build/alarm/` reconstruct timing at 25 Hz without
+changing XYZ values. Python analysis and playback preparation stay local;
+Python is not required to build or run the app.
 
-```sh
-make build     # Build bin/JUMPING.prg
-make test      # Run unit tests (simulator must be open: make simulator)
-make install   # Copy to a USB-mounted watch at /Volumes/GARMIN, clean macOS ._ files, eject
-```
+## Build and test
 
-Windows (defaults to fenix 7 Pro; builds into `bin/<device>/`):
+Requires Java, a selected Connect IQ SDK, installed device packages and a signing
+key (excluded from Git). Windows:
 
 ```powershell
-.\build.ps1          # Build bin/fenix7pro/JUMPING.prg
-.\build.ps1 -Run     # Build and launch in the simulator
-.\build.ps1 -Release # Build a release version
-.\build.ps1 -Test    # Run the Monkey C simulator tests
-.\build.ps1 -Device instinct2 -Test
 .\build.ps1 -Device instinct2 -Run
+.\build.ps1 -Device instinct2 -Test
+.\build.ps1 -Device fenix7pro -Test
+.\build.ps1 -Device instinct2 -Release
 ```
 
-Use `-Key <path>` if the signing key is outside this checkout. `-TestName <name>`
-with `-Test` runs an individual test. The script checks the simulator's test summary
-and saves it as `bin/<device>/test-results.txt`.
+Use `-Key <path>` for a key outside this checkout. `-TestName <name>` selects a
+unit test. Output is `bin/<device>/JumpStart.prg`; test summaries are saved in
+`bin/<device>/test-results.txt`.
 
-In VS Code, use **Run Jumping App** from Run and Debug (F5).
+For a one-off sideload test, build just before transferring:
 
-## Recordings
+```powershell
+.\build.ps1 -Device instinct2 -Release -TestAlarmMinutes 7
+```
 
-`recordings/` holds FIT files from the watch and `labels.csv` describing what each contains.
-`test/RecordedSamples.mc` contains the labelled recordings as flattened XYZ triples,
-in small blocks to stay within SDK compiler limits. Test fixtures are excluded from
-production builds. Python analysis and cross-language validation tools remain local;
-Python is not required to build, test in Connect IQ, or run the watch app.
+The script prints an absolute deadline seven minutes after the build starts.
+Copy `bin/instinct2/JumpStart.prg` to the connected watch's `GARMIN/APPS/`, eject,
+and open JumpStart before that deadline. That build arms the deadline once on
+first launch. Reopening after dismissal does not rearm it. If transfer takes too
+long, choose **Test in 5 min** on the watch instead. Normal builds never auto-arm.
 
-On the Instinct 2, accelerometer sample timestamps in the FIT file are invalid; use message
-order (25 samples per message, about 25-26 Hz). Lap markers lag the sensor data by 1-2 s.
+macOS: `make build`, `make test`, `make install` (defaults to `DEVICE=instinct2`,
+watch at `/Volumes/GARMIN`; override `SDK_DIR`, `KEY`, `WATCH` as needed).

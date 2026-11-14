@@ -4,11 +4,13 @@ param(
     [switch]$Release,
     [switch]$Test,
     [string[]]$TestName,
+    [ValidateRange(0, 60)][int]$TestAlarmMinutes = 0,
     [string]$Key = (Join-Path $PSScriptRoot 'developer_key')
 )
 $ErrorActionPreference = 'Stop'
 if ($Release -and $Test) { throw 'Use a debug build for simulator tests.' }
 if ($TestName -and !$Test) { throw 'TestName requires -Test.' }
+if ($Test -and $TestAlarmMinutes) { throw 'TestAlarmMinutes is for sideload/simulator app builds, not unit tests.' }
 $originalPath = $env:PATH
 if (!(Get-Command java -ErrorAction SilentlyContinue)) {
     $javaHomes = @($env:JAVA_HOME)
@@ -26,12 +28,28 @@ $sdk = (Get-Content -LiteralPath $sdkConfig -Raw).Trim()
 if (!(Test-Path -LiteralPath $Key)) { throw 'Place your signing key at developer_key or supply -Key <path>.' }
 $devicePackage = Join-Path $env:APPDATA "Garmin\ConnectIQ\Devices\$Device\compiler.json"
 if (!(Test-Path -LiteralPath $devicePackage)) { throw "Install the $Device device package in Garmin SDK Manager first." }
-$outputName = if ($Test) { 'JUMPING-tests.prg' } else { 'JUMPING.prg' }
+$outputName = if ($Test) { 'JumpStart-tests.prg' } else { 'JumpStart.prg' }
 $output = Join-Path $PSScriptRoot "bin\$Device\$outputName"
 New-Item -ItemType Directory -Force -Path (Split-Path $output) | Out-Null
+$jungle = 'monkey.jungle'
+if ($TestAlarmMinutes) {
+    $deadline = [DateTimeOffset]::Now.AddMinutes($TestAlarmMinutes)
+    $generated = Join-Path $PSScriptRoot "build\alarm-$Device"
+    New-Item -ItemType Directory -Force -Path "$generated\resources" | Out-Null
+    "<properties><property id=`"SideloadTestAt`" type=`"number`">$($deadline.ToUnixTimeSeconds())</property></properties>" |
+        Set-Content -LiteralPath "$generated\resources\properties.xml" -Encoding utf8
+    $rootPath = $PSScriptRoot.Replace('\', '/')
+    $generatedPath = $generated.Replace('\', '/')
+    @("project.manifest = $rootPath/manifest.xml",
+      "base.sourcePath = $rootPath/source;$rootPath/test",
+      "base.resourcePath = $rootPath/resources;$generatedPath/resources") |
+        Set-Content -LiteralPath "$generated\sideload.jungle" -Encoding utf8
+    $jungle = "$generated\sideload.jungle"
+    Write-Host "One-off test alarm: $($deadline.ToString('yyyy-MM-dd HH:mm:ss zzz')). Open the app on the watch before then."
+}
 Push-Location $PSScriptRoot
 try {
-    $compilerArgs = @('-f', 'monkey.jungle', '-d', $Device, '-o', $output, '-y', $Key, '-l', '3', '-w')
+    $compilerArgs = @('-f', $jungle, '-d', $Device, '-o', $output, '-y', $Key, '-l', '3', '-w')
     if ($Release) { $compilerArgs += '-r' }
     if ($Test) { $compilerArgs += '--unit-test' }
     & (Join-Path $sdk 'bin\monkeyc.bat') @compilerArgs

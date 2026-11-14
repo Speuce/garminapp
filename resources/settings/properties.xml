@@ -1,0 +1,5 @@
+<properties>
+    <!-- Normal builds never arm an alarm automatically. build.ps1 can override
+         this value for a one-off sideload test at an absolute UTC deadline. -->
+    <property id="SideloadTestAt" type="number">0</property>
+</properties>
