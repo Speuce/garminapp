@@ -173,7 +173,7 @@ class TrailView extends WatchUi.View {
     }
 
     private function drawDate(dc) {
-        title(dc, _c.draft["repeat"] == AlarmData.ONCE ? "Alarm date" : "Start date");
+        title(dc, "Alarm date");
         var s = _c.state;
         var field = s == AlarmController.YEAR ? "year" : (s == AlarmController.MONTH ? "month" : "day");
         text(dc, field.toUpper(), 69, Graphics.FONT_XTINY, MUTED);
@@ -189,13 +189,10 @@ class TrailView extends WatchUi.View {
         text(dc, AlarmData.repeatLabel(a), 166, Graphics.FONT_TINY, LIME);
         var detail = a["enabled"] ? "Enabled" : "Disabled";
         if (a["repeat"] == AlarmData.ONCE) { detail = AlarmData.dateLabel(a); }
-        else if (a["repeat"] == AlarmData.INTERVAL || a["interval"] > 1) {
-            detail = "From " + AlarmData.dateLabel(a);
+        else if (a["repeat"] == AlarmData.WEEKLY && a["interval"] > 1) {
+            detail = "Every " + a["interval"].toString() + " weeks";
         }
         text(dc, detail, 193, Graphics.FONT_XTINY, MUTED);
-        if (a["repeat"] == AlarmData.WEEKLY && a["interval"] > 1) {
-            text(dc, "Every " + a["interval"].toString() + " weeks", 217, Graphics.FONT_XTINY, MUTED);
-        }
     }
 
     private function drawConfirmation(dc) {

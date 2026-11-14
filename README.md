@@ -11,19 +11,19 @@ The fenix uses the colour Trail layout. The Instinct uses a separate 176px monoc
 - UP / DOWN moves through lists; in number editors, UP increases and DOWN decreases.
 - START selects a row or advances to the next field.
 - Select **Add alarm**, set hour/minute/AM-PM, choose a repeat pattern, then press START at **Review alarm** to save.
-- Presets: **Every day**, **Weekdays**, **Weekends**. **Custom week** supports chosen weekdays every 1-52 weeks, with a start date. **Every N days** supports 1-52 calendar-day intervals. **Once** stores a single date.
+- Presets: **Every day**, **Weekdays**, **Weekends**. **Custom week** supports chosen weekdays every 1-52 weeks. **Every N days** supports 1-52 calendar-day intervals. Repeating alarms go directly from interval to review. Only **Once** asks for a date.
 - Hold UP on a selected alarm for **Edit**, **Disable/Enable**, **Delete**, or **Add alarm**.
 - Delete opens a confirmation with **Keep alarm** selected by default. Disable keeps the time and repeat settings; editing a disabled alarm leaves it disabled.
 - BACK revisits the preceding field. Backing out of the first field offers **Keep editing** or **Discard**. Unsaved drafts never modify stored alarms.
 - On custom weekdays, START toggles a day. Select **Done** or hold UP to continue. At least one day must remain selected.
 
-The list starts empty. There are no automatically saved demo alarms. Up to 16 independent alarms can be stored. Dates are calendar dates and times are local wall-clock values. Weekly-cycle data uses Monday-Sunday weeks and the chosen start date; no occurrence calculation runs in the watch app yet.
+The list starts empty. There are no automatically saved demo alarms. Up to 16 independent alarms can be stored. Dates are calendar dates and times are local wall-clock values. No occurrence calculation runs in the watch app yet.
 
 ## Storage
 
 `AlarmStore` writes a versioned snapshot to `Application.Storage` under `jumpstart.alarms.v1`, immediately on Save, Disable/Enable, or confirmed Delete. It reads the value back before reporting success. This is Garmin's persistent device filesystem API, not browser storage or an in-memory settings mock. It requires no manifest storage permission.
 
-The snapshot contains `version`, `nextId`, and an `alarms` array. Each record stores a stable ID, 24-hour hour/minute, enabled flag, repeat type, weekday bitmask (Monday is bit 0), interval, and start year/month/day. Only serializable values are stored. Failed or unconfirmed writes retain the draft and report an error; unreadable or unknown-schema data is left untouched.
+The snapshot contains `version`, `nextId`, and an `alarms` array. Each record stores a stable ID, 24-hour hour/minute, enabled flag, repeat type, weekday bitmask (Monday is bit 0), interval, and year/month/day. The date fields remain for storage compatibility and one-time alarms; repeating alarms do not expose a start date. Only serializable values are stored. Failed or unconfirmed writes retain the draft and report an error; unreadable or unknown-schema data is left untouched.
 
 See [Garmin: Persisting Data](https://developer.garmin.com/connect-iq/core-topics/persisting-data/) for the on-disk behavior of `Storage.setValue`.
 

@@ -108,12 +108,29 @@ function customRulesAndValidation(logger as Test.Logger) as Boolean {
     for (var i = 0; i < 4; i++) { c.move(-1); }
     Test.assertEqual(c.draft["interval"], 5);
     c.select();
+    Test.assertEqual(c.state, AlarmController.REVIEW);
+    c.back();
+    Test.assertEqual(c.state, AlarmController.INTERVAL);
+    c.select(); c.select();
+    Test.assertEqual(c.store.records[0]["interval"], 5);
+    Test.assertEqual(c.store.records[0]["days"], 1);
+
+    c.beginEdit(0); c.select(); c.select(); c.select();
+    c.move(1); c.select(); // Custom week -> every N days
+    Test.assertEqual(c.state, AlarmController.INTERVAL);
+    c.select();
+    Test.assertEqual(c.state, AlarmController.REVIEW);
+    c.select();
+    Test.assertEqual(c.store.records[0]["repeat"], AlarmData.INTERVAL);
+
+    c.beginEdit(0); c.select(); c.select(); c.select();
+    c.move(1); c.select(); // Every N days -> once still requires a date.
+    Test.assertEqual(c.state, AlarmController.YEAR);
     c.draft["year"] = 2028; c.draft["month"] = 2; c.draft["day"] = 29;
     c.move(-1); // 2029, clamp Feb 29 to Feb 28.
     Test.assertEqual(c.draft["day"], 28);
-    c.select(); c.select(); c.select(); c.select();
-    Test.assertEqual(c.store.records[0]["interval"], 5);
-    Test.assertEqual(c.store.records[0]["days"], 1);
+    c.select(); c.select(); c.select();
+    Test.assertEqual(c.state, AlarmController.REVIEW);
     var invalid = AlarmData.copy(c.store.records[0]);
     invalid["day"] = 30; invalid["month"] = 2;
     Test.assert(!c.store.save(invalid));

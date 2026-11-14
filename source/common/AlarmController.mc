@@ -95,7 +95,7 @@ class AlarmController {
                 if (mask == 0) { notice = "Choose at least one day"; }
                 else { draft["days"] = mask; }
             }
-        } else if (state == INTERVAL) { go(YEAR); }
+        } else if (state == INTERVAL) { go(REVIEW); }
         else if (state == YEAR) { go(MONTH); }
         else if (state == MONTH) { go(DAY); }
         else if (state == DAY) { go(REVIEW); }
@@ -133,7 +133,7 @@ class AlarmController {
             draft["repeat"] = AlarmData.WEEKLY;
             draft["days"] = [127, 31, 96][cursor];
             draft["interval"] = 1;
-            // Ordinary weekly alarms start today; custom cycles keep an explicit anchor.
+            // Keep the existing storage format; repeating alarms have no date editor.
             var today = AlarmData.create();
             draft["year"] = today["year"]; draft["month"] = today["month"]; draft["day"] = today["day"];
             go(REVIEW);
