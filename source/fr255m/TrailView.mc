@@ -44,7 +44,9 @@ class TrailView extends WatchUi.View {
             fitted(dc, message, 208, 186, _c.notice == null ? MUTED : ACCENT);
         }
         // At y=231 the circular screen only has about 164px of usable width.
-        text(dc, action, 130, 231, Graphics.FONT_XTINY, FG);
+        if (action.length() > 0) {
+            text(dc, action, 130, 231, Graphics.FONT_XTINY, FG);
+        }
     }
 
     private function row(dc, label, y, selected, destructive) {
@@ -60,7 +62,23 @@ class TrailView extends WatchUi.View {
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
+    // Left-edge scroll bar: the thumb's position shows where UP/DOWN has put
+    // the user in the list. x=18 / y=76..184 stays inside the circular bezel.
+    private function scrollBar(dc, index, total) {
+        if (total < 2) { return; }
+        var top = 76;
+        var trackH = 108;
+        var thumbH = trackH / total;
+        if (thumbH < 16) { thumbH = 16; }
+        var thumbY = top + (trackH - thumbH) * index / (total - 1);
+        dc.setColor(PANEL, BG);
+        dc.fillRoundedRectangle(16, top, 5, trackH, 2);
+        dc.setColor(ACCENT, BG);
+        dc.fillRoundedRectangle(16, thumbY, 5, thumbH, 2);
+    }
+
     private function menu(dc, labels as Array<String>, selected) {
+        scrollBar(dc, selected, labels.size());
         var first = selected < 3 ? 0 : selected - 2;
         for (var i = first; i < labels.size() && i < first + 3; i++) {
             row(dc, labels[i], 79 + (i - first) * 40, i == selected, labels[i].equals("Delete"));
@@ -70,17 +88,18 @@ class TrailView extends WatchUi.View {
         footer(dc, "", "START: Select");
     }
 
-    // A drawn pencil stays recognizable without vector-font/radial-text support.
-    // Holding UP opens the actions menu with Edit selected.
+    // A drawn pencil in the top-right, beside the START/STOP button that edits.
     private function editHint(dc) {
+        var ox = 208;
+        var oy = -58;
         dc.setColor(ACCENT, BG);
         dc.setPenWidth(2);
-        dc.drawLine(9, 131, 19, 121);
-        dc.drawLine(13, 135, 23, 125);
-        dc.drawLine(19, 121, 23, 125);
-        dc.drawLine(9, 131, 8, 136);
-        dc.drawLine(8, 136, 13, 135);
-        dc.drawLine(17, 123, 21, 127);
+        dc.drawLine(ox + 9, oy + 131, ox + 19, oy + 121);
+        dc.drawLine(ox + 13, oy + 135, ox + 23, oy + 125);
+        dc.drawLine(ox + 19, oy + 121, ox + 23, oy + 125);
+        dc.drawLine(ox + 9, oy + 131, ox + 8, oy + 136);
+        dc.drawLine(ox + 8, oy + 136, ox + 13, oy + 135);
+        dc.drawLine(ox + 17, oy + 123, ox + 21, oy + 127);
         dc.setPenWidth(1);
     }
 
@@ -92,6 +111,7 @@ class TrailView extends WatchUi.View {
     private function drawList(dc) {
         title(dc, "JUMPSTART");
         var items = _c.store.records;
+        scrollBar(dc, _c.selection, items.size() + 1);
         if (_c.selection >= items.size()) {
             fitted(dc, items.size() == 0 ? "No alarms yet" : "New alarm", 85, 180, MUTED);
             row(dc, "+ Add alarm", 130, true, false);
@@ -107,7 +127,7 @@ class TrailView extends WatchUi.View {
         text(dc, AlarmData.periodLabel(item), 130, 151, Graphics.FONT_XTINY, MUTED);
         fitted(dc, AlarmData.repeatLabel(item), 180, 185, ACCENT);
         editHint(dc);
-        footer(dc, "", "START: Edit");
+        footer(dc, "", "");
     }
 
     private function drawTime(dc) {
