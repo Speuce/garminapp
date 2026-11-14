@@ -1,0 +1,29 @@
+# Connect IQ build outputs and generated files
+/bin/
+/build/
+/gen/
+*.prg
+*.prg.debug.xml
+*.iq
+*.mir
+*.mcgen
+
+# Developer signing keys (keep local)
+developer_key*
+*.der
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Machine-specific editor settings; shared launch configuration stays tracked
+/.vscode/settings.json
+/.vscode/*.log
+
+# Operating system and editor temporary files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
