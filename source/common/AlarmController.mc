@@ -1,4 +1,5 @@
 import Toybox.Lang;
+import Toybox.Time;
 
 // A small state machine shared by the button delegate and simulator tests.
 // Drafts never modify saved records until the review screen is confirmed.
@@ -104,6 +105,9 @@ class AlarmController {
         else if (state == DAY) { go(REVIEW); }
         else if (state == REVIEW) {
             var id = draft["id"];
+            if (draft["repeat"] == AlarmData.ONCE) {
+                AlarmSchedule.setNextOneTime(draft, Time.now().value());
+            }
             if (store.save(draft)) {
                 selection = id == 0 ? store.records.size() - 1 : store.indexOf(id);
                 returnToList("Saved to device");
@@ -143,7 +147,10 @@ class AlarmController {
             go(REVIEW);
         } else if (cursor == 3) { draft["repeat"] = AlarmData.WEEKLY; go(DAYS); }
         else if (cursor == 4) { draft["repeat"] = AlarmData.INTERVAL; go(INTERVAL); }
-        else { draft["repeat"] = AlarmData.ONCE; go(YEAR); }
+        else {
+            AlarmSchedule.setNextOneTime(draft, Time.now().value());
+            go(REVIEW);
+        }
     }
 
     function menu() {

@@ -108,20 +108,22 @@ class RingView extends WatchUi.View {
         var fg = color ? 0xF1F5E9 : Graphics.COLOR_WHITE;
         var bg = color ? 0x10150F : Graphics.COLOR_BLACK;
         var accent = color ? 0xCCFF66 : Graphics.COLOR_WHITE;
+        var align = Graphics.TEXT_JUSTIFY_CENTER |
+            (color ? Graphics.TEXT_JUSTIFY_VCENTER : 0);
         dc.setColor(fg, bg);
         dc.clear();
         dc.setColor(accent, bg);
-        dc.drawText(color ? w / 2 : w * 0.30, h * (color ? 0.14 : 0.10), Graphics.FONT_XTINY,
-            _preview ? "TEST ALARM" : "WAKE UP", Graphics.TEXT_JUSTIFY_CENTER);
-        dc.drawText(w / 2, h * (color ? 0.33 : 0.38), Graphics.FONT_NUMBER_HOT,
+        dc.drawText(color ? w / 2 : w * 0.30, h * (color ? 0.19 : 0.10), Graphics.FONT_XTINY,
+            _preview ? "TEST ALARM" : "WAKE UP", align);
+        dc.drawText(w / 2, h * (color ? 0.43 : 0.38), Graphics.FONT_NUMBER_HOT,
             _challenge.count().toString() + "/" + _challenge.target().toString(),
-            Graphics.TEXT_JUSTIFY_CENTER);
+            align);
         dc.setColor(fg, bg);
-        dc.drawText(w / 2, h * (color ? 0.59 : 0.65), Graphics.FONT_SMALL,
-            "JUMPING JACKS", Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(w / 2, h * 0.65, Graphics.FONT_SMALL,
+            "JUMPING JACKS", align);
         var status = !_receivedSamples ? "Stand still briefly" : "Keep going to stop";
         if (_sensorError) { status = "Sensor unavailable"; }
-        dc.drawText(w / 2, h * (color ? 0.70 : 0.76), Graphics.FONT_XTINY, status, Graphics.TEXT_JUSTIFY_CENTER);
+        dc.drawText(w / 2, h * 0.76, Graphics.FONT_XTINY, status, align);
         if (color) {
             dc.setColor(0x26331A, bg);
             dc.fillRoundedRectangle(w * 0.2, h * 0.83, w * 0.6, 5, 2);
@@ -129,8 +131,8 @@ class RingView extends WatchUi.View {
             dc.fillRoundedRectangle(w * 0.2, h * 0.83, w * 0.6 * _challenge.count() / _challenge.target(), 5, 2);
         }
         if (_preview || _sensorError) {
-            dc.drawText(w / 2, h * (color ? 0.89 : 0.86), Graphics.FONT_XTINY,
-                "BACK = exit", Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(w / 2, h * (color ? 0.90 : 0.86), Graphics.FONT_XTINY,
+                "BACK = exit", align);
         }
     }
 }

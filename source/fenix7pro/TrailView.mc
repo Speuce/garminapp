@@ -2,7 +2,7 @@ import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.WatchUi;
 
-// Shared 260px layout for fenix 7 Pro and Forerunner 255 Music. Content stays
+// Coordinates target the project's 260px fenix 7 Pro display. Content stays
 // inside the outer 22px band reserved for contextual button hints.
 class TrailView extends WatchUi.View {
     const BG = 0x10150F;

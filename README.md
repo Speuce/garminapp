@@ -13,7 +13,9 @@ Saved alarms start a challenge that stops after 5 confirmed jumping jacks.
 - BACK steps through the editor; discarding a draft preserves the saved alarm.
 
 Up to 16 alarms are stored and verified after writing. Repeat rules include daily,
-weekdays, weekends, custom days every N weeks, every N days and a one-time date.
+weekdays, weekends, custom days every N weeks, every N days and a one-time alarm.
+**Once** uses the next occurrence of the selected time (today or tomorrow), without
+year/month/day setup. The review screen shows the calculated date.
 Intervals are anchored to the date in the alarm record; custom weeks start on Monday.
 
 The earliest enabled alarm is scheduled whenever the list changes. The app checks
@@ -41,6 +43,8 @@ The sensor samples at 25 Hz only while the challenge is visible.
 calculates local calendar occurrences and preserves the selected occurrence across
 launches. `JumpStartApp.mc` connects the editor, scheduler and challenge. Device-specific
 Trail views handle the Instinct's subwindow and the fenix 7 Pro's 260px color screen.
+Forerunner 255 Music has a separate native-font layout: one alarm per page,
+measured time fields, vertically centered labels and a pencil for edit/options.
 
 `source/common/RepCounter.mc` is the adaptive X/Y/Z detector: smoothed axes,
 peak-relative returns, adaptive cadence, X/Z span, magnitude and shape checks.
@@ -72,6 +76,11 @@ review and challenge layouts were inspected. The fenix simulator delivers genera
 accelerometer samples, but did not deliver this FIT recording through its sensor
 callback. Fenix recording validation therefore uses the native sample-by-sample
 tests; full FIT playback and physical fenix validation remain unverified.
+
+The Forerunner layout revision passes 32 native tests on all three targets,
+including automatic today/tomorrow selection for one-time alarms. Simulator
+visual checks cover the list, time editor, repeat/day choices, review, notices,
+confirmation dialogs and five-jack screen. UP/DOWN tutorial captions are omitted.
 
 ## Build and test
 

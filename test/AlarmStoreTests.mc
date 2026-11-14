@@ -56,6 +56,24 @@ function calendarBoundariesAndLocalTime(logger as Logger) as Boolean {
 }
 
 (:test)
+function oneTimeAlarmUsesNextClockOccurrence(logger as Logger) as Boolean {
+    var item = ScheduleFixture.alarm();
+    var before = ScheduleFixture.at(2026,11,14,7,0);
+    AlarmSchedule.setNextOneTime(item, before);
+    Test.assertEqual(AlarmSchedule.next(item,before), ScheduleFixture.at(2026,11,14,7,15));
+    var exact = ScheduleFixture.at(2026,11,14,7,15);
+    AlarmSchedule.setNextOneTime(item, exact);
+    Test.assertEqual(AlarmSchedule.next(item,exact), ScheduleFixture.at(2026,11,15,7,15));
+    var leap = ScheduleFixture.at(2028,2,28,23,59);
+    AlarmSchedule.setNextOneTime(item, leap);
+    Test.assertEqual(AlarmSchedule.next(item,leap), ScheduleFixture.at(2028,2,29,7,15));
+    var yearEnd = ScheduleFixture.at(2026,12,31,23,59);
+    AlarmSchedule.setNextOneTime(item, yearEnd);
+    Test.assertEqual(AlarmSchedule.next(item,yearEnd), ScheduleFixture.at(2027,1,1,7,15));
+    return true;
+}
+
+(:test)
 function listChangesRescheduleAndPersist(logger as Logger) as Boolean {
     var backend = new ScheduleMemory(); var store = new AlarmStore(backend,"alarms");
     var now = ScheduleFixture.at(2026,11,14,0,0);

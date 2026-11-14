@@ -68,6 +68,22 @@ module AlarmSchedule {
         }
         return null;
     }
+
+    // A one-time alarm means the next local occurrence of its clock time.
+    // Advance the calendar date, rather than adding 24 hours to a local moment.
+    function setNextOneTime(record as Dictionary, after as Number) as Void {
+        var date = Gregorian.info(new Time.Moment(after), Time.FORMAT_SHORT);
+        var at = localMoment(date.year, date.month, date.day, record["hour"], record["minute"]);
+        if (at.value() <= after) {
+            var day = Gregorian.moment({:year=>date.year, :month=>date.month, :day=>date.day,
+                :hour=>0, :minute=>0, :second=>0}).add(new Time.Duration(86400));
+            date = Gregorian.utcInfo(day, Time.FORMAT_SHORT);
+        }
+        record["repeat"] = AlarmData.ONCE;
+        record["year"] = date.year;
+        record["month"] = date.month;
+        record["day"] = date.day;
+    }
 }
 
 // Persist the selected occurrence so reopening at alarm time still rings.

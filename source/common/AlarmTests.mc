@@ -124,13 +124,15 @@ function customRulesAndValidation(logger as Test.Logger) as Boolean {
     Test.assertEqual(c.store.records[0]["repeat"], AlarmData.INTERVAL);
 
     c.beginEdit(0); c.select(); c.select(); c.select();
-    c.move(1); c.select(); // Every N days -> once still requires a date.
-    Test.assertEqual(c.state, AlarmController.YEAR);
-    c.draft["year"] = 2028; c.draft["month"] = 2; c.draft["day"] = 29;
-    c.move(-1); // 2029, clamp Feb 29 to Feb 28.
-    Test.assertEqual(c.draft["day"], 28);
-    c.select(); c.select(); c.select();
+    c.move(1); c.select(); // Once goes straight to review, with no date wizard.
     Test.assertEqual(c.state, AlarmController.REVIEW);
+    Test.assertEqual(c.draft["repeat"], AlarmData.ONCE);
+    Test.assert(AlarmSchedule.next(c.draft, Toybox.Time.now().value()) != null);
+    c.back();
+    Test.assertEqual(c.state, AlarmController.PATTERN);
+    c.select(); c.select();
+    Test.assertEqual(c.state, AlarmController.LIST);
+    Test.assertEqual(c.store.records[0]["repeat"], AlarmData.ONCE);
     var invalid = AlarmData.copy(c.store.records[0]);
     invalid["day"] = 30; invalid["month"] = 2;
     Test.assert(!c.store.save(invalid));
