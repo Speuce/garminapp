@@ -1,12 +1,12 @@
-import Toybox.Application;
-import Toybox.WatchUi;
+// import Toybox.Application;
+// import Toybox.WatchUi;
 
-class EmptyApp extends Application.AppBase {
-    function initialize() {
-        AppBase.initialize();
-    }
+// class EmptyApp extends Application.AppBase {
+//     function initialize() {
+//         AppBase.initialize();
+//     }
 
-    function getInitialView() as [Views] or [Views, InputDelegates] {
-        return [new EmptyView()];
-    }
-}
+//     function getInitialView() as [Views] or [Views, InputDelegates] {
+//         return [new EmptyView()];
+//     }
+// }
