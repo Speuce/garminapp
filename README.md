@@ -130,6 +130,13 @@ the Forerunner sleep-screen integration check were deferred at the user's reques
 The normal Instinct release was sideloaded and its SHA-256 verified against the
 compiled file; physical-device behavior and overnight battery use remain to test.
 
+The experimental PCA study is archived in [docs/pca/report.html](docs/pca/report.html).
+It compares the current detector with PCA and impact-evidence filters, including
+harder synthetic arm-only motions. Neither experimental filter meets the target
+across all tested cohorts, so the watch detector remains unchanged. Python
+prototypes and their tests stay local; the report, protocol and results are saved
+on `codex/pca-jump-validation`, separately from the demo branch.
+
 ## Build and test
 
 Requires Java, a selected Connect IQ SDK, installed device packages and a signing key
