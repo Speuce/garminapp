@@ -1,5 +1,3 @@
-import Toybox.Activity;
-import Toybox.ActivityMonitor;
 import Toybox.Attention;
 import Toybox.Graphics;
 import Toybox.Lang;
@@ -10,35 +8,24 @@ import Toybox.WatchUi;
 
 class RingView extends WatchUi.View {
     private var _timer as Timer.Timer?;
+    private var _animationTimer as Timer.Timer?;
+    private var _armsUp as Boolean = false;
     private var _challenge as AlarmChallenge = new AlarmChallenge();
     private var _listening as Boolean = false;
     private var _sensorError as Boolean = false;
     private var _preview as Boolean;
     private var _receivedSamples as Boolean = false;
+    private var _heart as HeartRateMonitor = new HeartRateMonitor(null);
 
     function initialize(preview as Boolean) {
         View.initialize();
         _preview = preview;
     }
 
-    private function getHeartRate() as Number? {
-        var info = Activity.getActivityInfo();
-        if (info != null && info.currentHeartRate != null) {
-            return info.currentHeartRate;
-        }
-        // Fallback: most recent stored sample (can be a bit old)
-        if (ActivityMonitor has :getHeartRateHistory) {
-            var it = ActivityMonitor.getHeartRateHistory(1, true);
-            var sample = it.next();
-            if (sample != null && sample.heartRate != ActivityMonitor.INVALID_HR_SAMPLE) {
-                return sample.heartRate;
-            }
-        }
-        return null;
-    }
-
     function onShow() as Void {
         _challenge.start();
+        _armsUp = false;
+        _heart.start();
         _sensorError = false;
         _receivedSamples = false;
         try {
@@ -54,11 +41,14 @@ class RingView extends WatchUi.View {
         }
         _timer = new Timer.Timer();
         _timer.start(method(:onTick), 1500, true);
+        _animationTimer = new Timer.Timer();
+        _animationTimer.start(method(:onAnimationTick), 500, true);
         alert();
     }
 
     function onHide() as Void {
         _challenge.stop();
+        _heart.stop();
         if (_listening) {
             Sensor.unregisterSensorDataListener();
             _listening = false;
@@ -66,6 +56,10 @@ class RingView extends WatchUi.View {
         if (_timer != null) {
             _timer.stop();
             _timer = null;
+        }
+        if (_animationTimer != null) {
+            _animationTimer.stop();
+            _animationTimer = null;
         }
         if (Attention has :vibrate) {
             Attention.vibrate([] as Array<Attention.VibeProfile>);
@@ -92,6 +86,12 @@ class RingView extends WatchUi.View {
 
     function onTick() as Void {
         alert();
+        WatchUi.requestUpdate();
+    }
+
+    // Two half-second poses make one full jump per second, independent of reps.
+    function onAnimationTick() as Void {
+        _armsUp = !_armsUp;
         WatchUi.requestUpdate();
     }
 
@@ -134,7 +134,7 @@ class RingView extends WatchUi.View {
 
         var titleY  = h * (color ? 0.14 : 0.10);
         var countY  = h * (color ? 0.33 : 0.31);
-        var labelY  = h * (color ? 0.49 : 0.50);
+        var labelY  = h * 0.49;
         var rowY    = h * (color ? 0.64 : 0.66);
         var barY    = h * 0.76;
         var statusY = h * (color ? 0.84 : 0.85);
@@ -143,15 +143,16 @@ class RingView extends WatchUi.View {
         dc.setColor(accent, bg);
         dc.drawText(color ? w / 2 : w * 0.30, titleY, Graphics.FONT_XTINY,
             _preview ? "TEST ALARM" : "WAKE UP", mid);
-        dc.drawText(w / 2, countY, Graphics.FONT_NUMBER_HOT,
+        dc.drawText(color ? w / 2 : w * 0.36, countY, Graphics.FONT_NUMBER_HOT,
             _challenge.count().toString() + "/" + _challenge.target().toString(), mid);
 
         dc.setColor(fg, bg);
         dc.drawText(w / 2, labelY, Graphics.FONT_XTINY, "JUMPING JACKS", mid);
 
         // Critter on the left, heart rate on the right, sharing one row.
-        drawJumper(dc, w * 0.25, rowY, (_challenge.count() % 2) == 1, fg);
-        drawHeartRate(dc, w * 0.64, rowY, getHeartRate(), color, fg);
+        drawJumper(dc, w * 0.25, rowY, _armsUp, fg);
+        HeartRateDisplay.draw(dc, w * 0.64, rowY, _heart.current(),
+            Graphics.FONT_NUMBER_MEDIUM, fg, color ? 0xFF4D4D : fg, color);
 
         if (color) {
             dc.setColor(0x26331A, bg);
@@ -169,38 +170,8 @@ class RingView extends WatchUi.View {
         }
     }
 
-    // Heart icon + large number (+ "bpm" on color screens), centred on (cx, cy).
-    private function drawHeartRate(dc as Dc, cx as Numeric, cy as Numeric,
-                                   hr as Number?, color as Boolean, fg as Number) as Void {
-        var text = (hr != null) ? hr.toString() : "--";
-        var font = Graphics.FONT_NUMBER_MEDIUM;
-        var numW = dc.getTextWidthInPixels(text, font);
-        var unitW = color ? dc.getTextWidthInPixels("bpm", Graphics.FONT_XTINY) + 4 : 0;
-        var total = 24 + numW + unitW;
-        var left = cx - total / 2;
-
-        var heartColor = color ? (hr != null ? 0xFF4D4D : 0x6B3A3A) : Graphics.COLOR_WHITE;
-        drawHeart(dc, left + 10, cy, heartColor);
-
-        dc.setColor(fg, Graphics.COLOR_TRANSPARENT);
-        dc.drawText(left + 24, cy, font, text,
-            Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
-        if (color) {
-            dc.setColor(0x8A9A7A, Graphics.COLOR_TRANSPARENT);
-            dc.drawText(left + 24 + numW + 4, cy + 8, Graphics.FONT_XTINY, "bpm",
-                Graphics.TEXT_JUSTIFY_LEFT | Graphics.TEXT_JUSTIFY_VCENTER);
-        }
-    }
-
-    private function drawHeart(dc as Dc, x as Numeric, y as Numeric, c as Number) as Void {
-        dc.setColor(c, Graphics.COLOR_TRANSPARENT);
-        dc.fillCircle(x - 5, y - 3, 5);
-        dc.fillCircle(x + 5, y - 3, 5);
-        dc.fillPolygon([[x - 10, y - 1], [x + 10, y - 1], [x, y + 10]] as Array<Graphics.Point2D>);
-    }
-
     // Jumping-jack critter (about 42px tall) centred on (x, y).
-    // Pose flips on every completed jack.
+    // Pose follows the animation timer; only the detector can credit a rep.
     private function drawJumper(dc as Dc, x as Numeric, y as Numeric,
                                 armsUp as Boolean, c as Number) as Void {
         dc.setColor(c, Graphics.COLOR_TRANSPARENT);

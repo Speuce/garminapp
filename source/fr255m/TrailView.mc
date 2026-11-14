@@ -121,7 +121,8 @@ class TrailView extends WatchUi.View {
         }
         SleepIcon.draw(dc, 193, 34, 7, sleepSelected ? ACCENT : MUTED, BG);
         var items = _c.store.records;
-        scrollBar(dc, _c.selection, items.size() + 1);
+        // The moon is a shortcut above the list, not a negative scroll position.
+        if (!sleepSelected) { scrollBar(dc, _c.selection, items.size() + 1); }
         if (_c.selection >= items.size() || items.size() == 0) {
             fitted(dc, items.size() == 0 ? "No alarms yet" : "New alarm", 85, 180, MUTED);
             row(dc, "+ Add alarm", 130, !sleepSelected, false);
@@ -138,7 +139,8 @@ class TrailView extends WatchUi.View {
         text(dc, AlarmData.periodLabel(item), 130, 151, Graphics.FONT_XTINY, MUTED);
         fitted(dc, AlarmData.repeatLabel(item), 180, 185, ACCENT);
         if (!sleepSelected) { editHint(dc); }
-        // footer(dc, "", sleepSelected ? "START: Sleep" : "START: Edit");
+        // Keep the clean layout while still explaining a failed sleep request.
+        footer(dc, "", "");
     }
 
     private function drawTime(dc) {

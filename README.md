@@ -17,13 +17,20 @@ Saved alarms start a challenge that stops after 5 confirmed jumping jacks.
   to the app. Firmware-reserved LIGHT shortcuts cannot be remapped.
 
 Sleep mode keeps JumpStart open with the backlight off and a minimal dark screen
-showing the next alarm. It uses no motion sensors until ringing starts and checks
-the clock at most a minute apart, shortening the wait to the alarm deadline.
+showing the next alarm and current heart rate. Heart rate refreshes every five
+seconds; an unavailable reading shows `-- bpm`. It uses no motion sensors until
+ringing starts and checks the clock at most a minute apart, shortening the wait
+to the alarm deadline.
 Leave this screen open overnight for direct ringing without the launch prompt.
 BACK returns to the alarm list without changing your alarms. Completing five jacks
 also returns to the list. Watch backlight settings can still light the screen after
 a button press or gesture; sleep mode does not change global watch settings.
-Overnight battery use and behavior after system interruptions need hardware testing.
+The heart-rate request and display timer stop when leaving sleep mode. The ringing
+screen also requests current heart rate, alongside the jumping-jack counter.
+The figure demonstrates one complete jump per second, independently of movement;
+only detected jumping jacks advance the counter toward the five-jack target.
+Historical readings are not presented as live data. Overnight battery use with
+heart rate enabled and behavior after system interruptions need hardware testing.
 LIGHT/POWER key events are consumed when delivered to the sleep or ringing screen.
 Garmin owns the physical LIGHT button and system shortcuts on these watches; the
 app cannot disable the controls menu, assistance or forced shutdown. These paths
@@ -111,6 +118,17 @@ layouts, button navigation and Fenix moon touch target were visually checked.
 LIGHT did not open sleep mode on any of these simulator models; its optional
 shortcut depends on firmware delivering the raw key event. Hardware sleep-mode
 and overnight battery validation remain outstanding.
+
+The heart-rate revision on top of `more-forerunner` passes 37 native tests on
+Instinct 2 and Forerunner 255 Music, including current-reading changes, missing
+data, sensor failures and lifecycle cleanup. Live heart rate was observed on both
+simulators' ringing screens. On Instinct, sleep displayed changing heart rate
+with the backlight off and a saved 14:23 alarm opened the challenge directly.
+The animated figure changed poses with the counter still at zero. The Instinct
+counter was moved clear of the round display cutout. Further data simulation and
+the Forerunner sleep-screen integration check were deferred at the user's request.
+The normal Instinct release was sideloaded and its SHA-256 verified against the
+compiled file; physical-device behavior and overnight battery use remain to test.
 
 ## Build and test
 

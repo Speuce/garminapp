@@ -4,6 +4,7 @@ import Toybox.Lang;
 import Toybox.System;
 import Toybox.Time;
 import Toybox.Time.Gregorian;
+import Toybox.Timer;
 import Toybox.WatchUi;
 
 // Vector crescent shared by the main-screen shortcut and the sleep screen.
@@ -17,18 +18,29 @@ module SleepIcon {
 }
 
 // Remains in the foreground: the app's scheduler opens RingView directly.
-// No sensor subscription, activity recording, or display timer while asleep.
+// Heart rate refreshes every five seconds; motion sensing starts only at alarm time.
 class SleepView extends WatchUi.View {
     private var _deadline as Number;
+    private var _heart as HeartRateMonitor = new HeartRateMonitor(null);
+    private var _timer as Timer.Timer?;
 
     function initialize(deadline as Number) {
         View.initialize();
         _deadline = deadline;
     }
 
-    function onShow() as Void { dim(); }
+    function onShow() as Void {
+        dim();
+        _heart.start();
+        _timer = new Timer.Timer();
+        _timer.start(method(:refreshHeartRate), 5000, true);
+    }
+
+    function refreshHeartRate() as Void { WatchUi.requestUpdate(); }
 
     function onHide() as Void {
+        if (_timer != null) { _timer.stop(); _timer = null; }
+        _heart.stop();
         if (Attention has :backlight) { Attention.backlight(true); }
     }
 
@@ -45,7 +57,7 @@ class SleepView extends WatchUi.View {
         var bg = Graphics.COLOR_BLACK;
         dc.setColor(fg, bg);
         dc.clear();
-        SleepIcon.draw(dc, color ? w / 2 : w * 0.35, h * 0.18, color ? 9 : 8, muted, bg);
+        SleepIcon.draw(dc, color ? w / 2 : w * 0.35, h * 0.15, color ? 9 : 8, muted, bg);
 
         var info = Gregorian.info(new Time.Moment(_deadline), Time.FORMAT_SHORT);
         var full = Gregorian.info(new Time.Moment(_deadline), Time.FORMAT_MEDIUM);
@@ -56,14 +68,16 @@ class SleepView extends WatchUi.View {
         var period = use24 ? "" : (info.hour >= 12 ? " PM" : " AM");
         var align = Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER;
         dc.setColor(muted, bg);
-        dc.drawText(color ? w / 2 : w * 0.35, h * 0.36, Graphics.FONT_XTINY, "NEXT ALARM", align);
+        dc.drawText(color ? w / 2 : w * 0.32, h * (color ? 0.29 : 0.31), Graphics.FONT_XTINY, "NEXT ALARM", align);
         dc.setColor(fg, bg);
-        dc.drawText(w / 2, h * 0.52, Graphics.FONT_NUMBER_MEDIUM, time, align);
+        dc.drawText(w / 2, h * (color ? 0.44 : 0.49), Graphics.FONT_NUMBER_MEDIUM, time, align);
         dc.setColor(muted, bg);
-        dc.drawText(w / 2, h * 0.64, Graphics.FONT_XTINY, period, align);
-        dc.drawText(w / 2, h * 0.74, Graphics.FONT_XTINY,
+        dc.drawText(w / 2, h * (color ? 0.58 : 0.63), Graphics.FONT_XTINY, period, align);
+        dc.drawText(w / 2, h * (color ? 0.68 : 0.74), Graphics.FONT_XTINY,
             full.day_of_week + " " + info.day.toString() + " " + full.month, align);
-        dc.drawText(w / 2, h * 0.86, Graphics.FONT_XTINY, "BACK = return", align);
+        HeartRateDisplay.draw(dc, w / 2, h * (color ? 0.82 : 0.87), _heart.current(),
+            Graphics.FONT_XTINY, fg, muted, true);
+        if (color) { dc.drawText(w / 2, h * 0.93, Graphics.FONT_XTINY, "BACK = return", align); }
     }
 }
 
