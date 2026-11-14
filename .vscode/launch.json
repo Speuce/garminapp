@@ -4,9 +4,16 @@
         {
             "type": "monkeyc",
             "request": "launch",
-            "name": "Run Empty App",
+            "name": "Run JumpStart (fenix 7 Pro)",
             "stopAtLaunch": false,
             "device": "fenix7pro"
+        },
+        {
+            "type": "monkeyc",
+            "request": "launch",
+            "name": "Run JumpStart (Instinct 2)",
+            "stopAtLaunch": false,
+            "device": "instinct2"
         }
     ]
 }

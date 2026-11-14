@@ -59,7 +59,7 @@ class TimePickerView extends WatchUi.View {
             WatchUi.requestUpdate();
         } else {
             AlarmStore.setTime(hour, minute);
-            AlarmStore.setEnabled(true);   // setting a time turns the alarm on
+            AlarmStore.setWakeEnabled(true);   // setting a time turns the alarm on
             // Return to the main screen (pops picker and menu)
             WatchUi.popView(WatchUi.SLIDE_RIGHT);
             WatchUi.popView(WatchUi.SLIDE_RIGHT);

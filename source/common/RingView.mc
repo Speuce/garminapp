@@ -205,6 +205,7 @@ class RingDelegate extends WatchUi.BehaviorDelegate {
 
     private function stopAlarm() as Void {
         AlarmStore.dismiss();
-        WatchUi.switchToView(new MainView(), new MainDelegate(), WatchUi.SLIDE_IMMEDIATE);
+        var controller = new AlarmController(new AlarmStore(new DeviceAlarmStorage(), AlarmStore.STORAGE_KEY));
+        WatchUi.switchToView(new TrailView(controller), new TrailDelegate(controller), WatchUi.SLIDE_IMMEDIATE);
     }
 }
