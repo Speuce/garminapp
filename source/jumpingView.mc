@@ -6,11 +6,11 @@ import Toybox.WatchUi;
 
 class jumpingView extends WatchUi.View {
 
-    private var _recording as Recording;
+    private var _recorder as AccelerometerRecorder;
 
-    function initialize(recording as Recording) {
+    function initialize(recorder as AccelerometerRecorder) {
         View.initialize();
-        _recording = recording;
+        _recorder = recorder;
     }
 
     // Called when this View is brought to the foreground. Restore
@@ -26,8 +26,8 @@ class jumpingView extends WatchUi.View {
         var x = dc.getWidth() / 2;
         var y = dc.getHeight() / 2;
         var lineHeight = dc.getFontHeight(Graphics.FONT_SMALL);
-        var lines = _recording.isRecording()
-            ? ["REC", "Samples " + _recording.sampleCount(), "Marks " + _recording.markerCount(), "BACK: mark"]
+        var lines = _recorder.isRecording()
+            ? ["REC", "Samples " + _recorder.sampleCount(), "Marks " + _recorder.markerCount(), "BACK: mark"]
             : ["Ready", "START: record"];
         var top = y - lines.size() * lineHeight / 2;
         for (var i = 0; i < lines.size(); i++) {

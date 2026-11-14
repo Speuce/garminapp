@@ -1,27 +1,27 @@
-// ABOUTME: Button handling: START/STOP toggles recording, BACK drops a marker while recording.
+// ABOUTME: Button handling: START/STOP toggles recording, BACK adds a lap marker while recording.
 // ABOUTME: BACK exits the app as usual when not recording.
 import Toybox.Lang;
 import Toybox.WatchUi;
 
 class jumpingDelegate extends WatchUi.BehaviorDelegate {
 
-    private var _logger as AccelerometerLogger;
+    private var _recorder as AccelerometerRecorder;
 
-    function initialize(logger as AccelerometerLogger) {
+    function initialize(recorder as AccelerometerRecorder) {
         BehaviorDelegate.initialize();
-        _logger = logger;
+        _recorder = recorder;
     }
 
     function onSelect() as Boolean {
-        _logger.toggle();
+        _recorder.toggle();
         return true;
     }
 
     function onBack() as Boolean {
-        if (!_logger.recording().isRecording()) {
+        if (!_recorder.isRecording()) {
             return false;
         }
-        _logger.mark();
+        _recorder.mark();
         return true;
     }
 
