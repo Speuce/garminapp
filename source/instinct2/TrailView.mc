@@ -76,11 +76,6 @@ class TrailView extends WatchUi.View {
             // Three dots by UP indicate the hold-menu action without tiny rotated text.
             for (var i = 0; i < 3; i++) { dc.fillCircle(10, 82 + i * 5, 1); }
         }
-        dc.drawArc(88, 88, 85, Graphics.ARC_CLOCKWISE, 324, 307);
-        // Return arrow at the lower-right physical BACK button.
-        dc.drawLine(165, 126, 159, 126);
-        dc.drawLine(159, 126, 162, 123);
-        dc.drawLine(159, 126, 162, 129);
         if (save) {
             dc.drawArc(144, 31, 28, Graphics.ARC_CLOCKWISE, 20, -20);
         }
@@ -138,8 +133,8 @@ class TrailView extends WatchUi.View {
         if (sleepSelected) {
             dc.setColor(FG, BG);
             dc.drawCircle(144, 31, 16);
+            SleepIcon.draw(dc, 144, 31, 8, FG, BG);
         }
-        SleepIcon.draw(dc, 144, 31, 8, FG, BG);
         if (_c.selection == count || count == 0) {
             text(dc, count == 0 ? "No alarms yet" : "New alarm", 88, 81, Graphics.FONT_XTINY, FG);
             row(dc, "+ Add alarm", 120, !sleepSelected);
@@ -153,8 +148,7 @@ class TrailView extends WatchUi.View {
         text(dc, AlarmData.timeLabel(item), 77, 95, Graphics.FONT_NUMBER_MEDIUM, ink);
         text(dc, AlarmData.periodLabel(item), 137, 95, Graphics.FONT_XTINY, ink);
         text(dc, fit(dc, AlarmData.repeatLabel(item), 124), 88, 125, Graphics.FONT_XTINY, ink);
-        if (sleepSelected) { text(dc, "Sleep", 88, 155, Graphics.FONT_XTINY, FG); }
-        else if (!item["enabled"]) { text(dc, "Disabled", 88, 155, Graphics.FONT_XTINY, FG); }
+        if (!sleepSelected && !item["enabled"]) { text(dc, "Disabled", 88, 155, Graphics.FONT_XTINY, FG); }
     }
 
     private function drawTime(dc) {
