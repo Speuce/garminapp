@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('fenix7pro', 'instinct2')][string]$Device = 'fenix7pro',
+    [ValidateSet('fenix7pro', 'fr255m', 'instinct2')][string]$Device = 'fenix7pro',
     [switch]$Run,
     [switch]$Release,
     [switch]$Test,
@@ -44,6 +44,7 @@ if ($TestAlarmMinutes) {
     @("project.manifest = $rootPath/manifest.xml",
       "base.sourcePath = $rootPath/source/common;$rootPath/test",
       "fenix7pro.sourcePath = `$(base.sourcePath);$rootPath/source/fenix7pro",
+      "fr255m.sourcePath = `$(base.sourcePath);$rootPath/source/fenix7pro",
       "instinct2.sourcePath = `$(base.sourcePath);$rootPath/source/instinct2",
       "instinct2.resourcePath = `$(base.resourcePath);$rootPath/resources-instinct2",
       "base.resourcePath = $rootPath/resources;$generatedPath/resources") |

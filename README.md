@@ -1,6 +1,7 @@
 # JumpStart
 
-A Connect IQ alarm app for Instinct 2 (`instinct2`) and fenix 7 Pro (`fenix7pro`).
+A Connect IQ alarm app for Instinct 2 (`instinct2`), fenix 7 Pro (`fenix7pro`)
+and Forerunner 255 Music (`fr255m`).
 Saved alarms start a challenge that stops after 5 confirmed jumping jacks.
 
 ## On the watch
@@ -81,6 +82,7 @@ Requires Java, a selected Connect IQ SDK, installed device packages and a signin
 .\build.ps1 -Device instinct2 -Run
 .\build.ps1 -Device instinct2 -Test
 .\build.ps1 -Device fenix7pro -Test
+.\build.ps1 -Device fr255m -Test
 .\build.ps1 -Device instinct2 -Release
 ```
 

@@ -3,6 +3,7 @@
     <iq:application id="e842ac6da0e24e4494f2d9dd7b9c2823" type="watch-app" name="@Strings.AppName" entry="JumpStartApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="3.2.0">
         <iq:products>
             <iq:product id="fenix7pro"/>
+            <iq:product id="fr255m"/>
             <iq:product id="instinct2"/>
         </iq:products>
         <iq:permissions>
