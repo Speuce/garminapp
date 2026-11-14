@@ -134,11 +134,20 @@ The experimental PCA study is archived in [docs/pca/report.html](docs/pca/report
 It compares the original detector with PCA and impact-evidence filters, including
 harder synthetic arm-only motions. Neither filter meets the target across all
 tested cohorts. At the user's request, `codex/pca-jump-validation` now ports the
-PCA-only filter to Monkey C for physical-device testing: PC3 must explain at least
+PCA + impact filter to Monkey C for physical-device testing: PC3 must explain at least
 0.6% of variance over the candidate plus eight earlier samples. A fixed 74-sample
 buffer and a 3x3 positive-semidefinite check implement the eigenvalue threshold.
-The impact filter is not included. The dismissal target remains five. Python
-prototypes stay local; simulator testing of this port is explicitly skipped.
+The impact filter requires at least 0.3 g/sample RMS change outside PC1 and at
+least 8% of Hann-windowed spectral energy in 3–10 Hz (relative to bins at or above
+0.5 Hz). Jacobi rotations find PC1; Goertzel evaluates the same bins as the Python
+FFT. The dismissal target remains five. Python prototypes stay local; simulator
+testing of this port is explicitly skipped. This stricter version retained 20/20
+original recorded jacks but only 80.9% in time-scaled recording tests. The PCA-only
+device build remains available at commit `4f314e2` for rollback.
+Counts still confirm the first three qualifying cycles together. The sensor
+requests one-second batches, and the impact check uses the existing candidate
+window without waiting for additional samples. Shortening confirmation was not
+included, to preserve rejection of isolated arm movements.
 The demo branch `more-forerunner` remains on `97c29c3` for rollback.
 
 ## Build and test

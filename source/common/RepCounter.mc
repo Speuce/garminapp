@@ -1,5 +1,5 @@
 // ABOUTME: Adaptive jumping-jack counter for calibrated XYZ samples in milli-g at ~25 Hz.
-// ABOUTME: Uses peak-relative returns, cadence, PCA-only gating and three-cycle confirmation.
+// ABOUTME: Uses peak-relative returns, cadence, PCA + impact gating and three-cycle confirmation.
 import Toybox.Lang;
 import Toybox.Math;
 
@@ -138,9 +138,9 @@ class RepCounter {
             quality < 2.3 || (meanPeakRatio < 0.72 && (quality < strongThreshold || zSpan < 0.8))) {
             return 0;
         }
-        // Match the Python PCA-only prototype: current candidate + 8 earlier
+        // Match the Python PCA + impact prototype: current candidate + 8 earlier
         // samples, gated before confirmation. A rejected cycle clears the run.
-        if (!_motionPca.allows(age + 9)) {
+        if (!_motionPca.allows(age + 9, _gravityScale)) {
             clearRun();
             return 0;
         }
