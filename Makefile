@@ -9,10 +9,10 @@ APP := bin/JumpStart.prg
 TEST_APP := bin/JumpStart-tests.prg
 
 build:
-	"$(SDK_DIR)/bin/monkeyc" -f monkey.jungle -d $(DEVICE) -y "$(KEY)" -o $(APP) -l 3 -w
+	"$(SDK_DIR)/bin/monkeyc" -f monkey.jungle -d $(DEVICE) -y "$(KEY)" -o $(APP) -l 1 -w
 
 test:
-	"$(SDK_DIR)/bin/monkeyc" -f monkey.jungle -d $(DEVICE) -y "$(KEY)" -o $(TEST_APP) -l 3 -w --unit-test
+	"$(SDK_DIR)/bin/monkeyc" -f monkey.jungle -d $(DEVICE) -y "$(KEY)" -o $(TEST_APP) -l 1 -w --unit-test
 	# monkeydo exits 1 whether tests pass or fail, so the summary line decides the result.
 	"$(SDK_DIR)/bin/monkeydo" $(TEST_APP) $(DEVICE) -t | tee bin/test-results.txt; \
 	grep -q '^PASSED' bin/test-results.txt

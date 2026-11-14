@@ -34,6 +34,7 @@ New-Item -ItemType Directory -Force -Path (Split-Path $output) | Out-Null
 $jungle = 'monkey.jungle'
 if ($TestAlarmMinutes) {
     $deadline = [DateTimeOffset]::Now.AddMinutes($TestAlarmMinutes)
+    $deadline = [DateTimeOffset]::FromUnixTimeSeconds([long]([Math]::Ceiling($deadline.ToUnixTimeSeconds() / 60.0) * 60))
     $generated = Join-Path $PSScriptRoot "build\alarm-$Device"
     New-Item -ItemType Directory -Force -Path "$generated\resources" | Out-Null
     "<properties><property id=`"SideloadTestAt`" type=`"number`">$($deadline.ToUnixTimeSeconds())</property></properties>" |
@@ -41,7 +42,10 @@ if ($TestAlarmMinutes) {
     $rootPath = $PSScriptRoot.Replace('\', '/')
     $generatedPath = $generated.Replace('\', '/')
     @("project.manifest = $rootPath/manifest.xml",
-      "base.sourcePath = $rootPath/source;$rootPath/test",
+      "base.sourcePath = $rootPath/source/common;$rootPath/test",
+      "fenix7pro.sourcePath = `$(base.sourcePath);$rootPath/source/fenix7pro",
+      "instinct2.sourcePath = `$(base.sourcePath);$rootPath/source/instinct2",
+      "instinct2.resourcePath = `$(base.resourcePath);$rootPath/resources-instinct2",
       "base.resourcePath = $rootPath/resources;$generatedPath/resources") |
         Set-Content -LiteralPath "$generated\sideload.jungle" -Encoding utf8
     $jungle = "$generated\sideload.jungle"
@@ -49,7 +53,7 @@ if ($TestAlarmMinutes) {
 }
 Push-Location $PSScriptRoot
 try {
-    $compilerArgs = @('-f', $jungle, '-d', $Device, '-o', $output, '-y', $Key, '-l', '3', '-w')
+    $compilerArgs = @('-f', $jungle, '-d', $Device, '-o', $output, '-y', $Key, '-l', '1', '-w')
     if ($Release) { $compilerArgs += '-r' }
     if ($Test) { $compilerArgs += '--unit-test' }
     & (Join-Path $sdk 'bin\monkeyc.bat') @compilerArgs
