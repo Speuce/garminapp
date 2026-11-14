@@ -11,6 +11,23 @@ Saved alarms start a challenge that stops after 5 confirmed jumping jacks.
 - Hold UP/MENU on an alarm for Edit, Enable/Disable, Delete, Add alarm, **Test now** or **Test in 5 min**.
 - Hold UP/MENU on **Add alarm** for the test options, including when the list is empty.
 - BACK steps through the editor; discarding a draft preserves the saved alarm.
+- To go to sleep, press UP from the first alarm to select the moon, then START/GPS.
+  On fenix 7 Pro you can also tap the moon. Set an enabled alarm first.
+- LIGHT also opens sleep mode from the main screen if the device delivers that key
+  to the app. Firmware-reserved LIGHT shortcuts cannot be remapped.
+
+Sleep mode keeps JumpStart open with the backlight off and a minimal dark screen
+showing the next alarm. It uses no motion sensors until ringing starts and checks
+the clock at most a minute apart, shortening the wait to the alarm deadline.
+Leave this screen open overnight for direct ringing without the launch prompt.
+BACK returns to the alarm list without changing your alarms. Completing five jacks
+also returns to the list. Watch backlight settings can still light the screen after
+a button press or gesture; sleep mode does not change global watch settings.
+Overnight battery use and behavior after system interruptions need hardware testing.
+LIGHT/POWER key events are consumed when delivered to the sleep or ringing screen.
+Garmin owns the physical LIGHT button and system shortcuts on these watches; the
+app cannot disable the controls menu, assistance or forced shutdown. These paths
+can interrupt the app, so the five-jack requirement cannot be enforced system-wide.
 
 Up to 16 alarms are stored and verified after writing. Repeat rules include daily,
 weekdays, weekends, custom days every N weeks, every N days and a one-time alarm.
@@ -18,8 +35,9 @@ weekdays, weekends, custom days every N weeks, every N days and a one-time alarm
 year/month/day setup. The review screen shows the calculated date.
 Intervals are anchored to the date in the alarm record; custom weeks start on Monday.
 
-The earliest enabled alarm is scheduled whenever the list changes. The app checks
-its schedule every second, including while editing another alarm. Closing and
+The earliest enabled alarm is scheduled whenever the list changes. Outside sleep
+mode, the app checks its schedule every second, including while editing another
+alarm. Closing and
 reopening during the ten-minute ringing window preserves the pending alarm.
 Completing a challenge reschedules repeating alarms and disables completed one-time
 alarms. Alarms due together share a challenge. Test mode preserves saved alarms.
@@ -81,6 +99,18 @@ The Forerunner layout revision passes 32 native tests on all three targets,
 including automatic today/tomorrow selection for one-time alarms. Simulator
 visual checks cover the list, time editor, repeat/day choices, review, notices,
 confirmation dialogs and five-jack screen. UP/DOWN tutorial captions are omitted.
+
+The sleep-mode revision is rebased onto `codex/forerunner-layout` (`014ed11`) and
+passes all 35 native tests on Instinct 2, fenix 7 Pro and Forerunner 255 Music.
+An alarm saved in the Forerunner simulator for 13:53 started the challenge directly
+from sleep mode at its scheduled minute, without a launch prompt. START, BACK and
+a short LIGHT press did not dismiss it. Reopening that pending alarm on the
+Instinct simulator and replaying the positive recording completed it at five jacks,
+returned to the list and disabled the one-time alarm. The smaller moon, sleep
+layouts, button navigation and Fenix moon touch target were visually checked.
+LIGHT did not open sleep mode on any of these simulator models; its optional
+shortcut depends on firmware delivering the raw key event. Hardware sleep-mode
+and overnight battery validation remain outstanding.
 
 ## Build and test
 

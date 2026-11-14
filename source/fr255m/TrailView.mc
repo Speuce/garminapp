@@ -18,6 +18,10 @@ class TrailView extends WatchUi.View {
         _c = controller;
     }
 
+    function hitSleep(x, y) as Boolean {
+        return _c.state == AlarmController.LIST && x >= 175 && x <= 213 && y >= 15 && y <= 54;
+    }
+
     private function text(dc, value, x, y, font, color) {
         dc.setColor(color, BG);
         dc.drawText(x, y, font, value,
@@ -109,25 +113,32 @@ class TrailView extends WatchUi.View {
     }
 
     private function drawList(dc) {
-        title(dc, "JUMPSTART");
+        text(dc, "JUMPSTART", 113, 31, Graphics.FONT_TINY, ACCENT);
+        var sleepSelected = _c.selection == AlarmController.SLEEP_SELECTION;
+        if (sleepSelected) {
+            dc.setColor(ACCENT, BG);
+            dc.drawCircle(193, 34, 11);
+        }
+        SleepIcon.draw(dc, 193, 34, 7, sleepSelected ? ACCENT : MUTED, BG);
         var items = _c.store.records;
         scrollBar(dc, _c.selection, items.size() + 1);
-        if (_c.selection >= items.size()) {
+        if (_c.selection >= items.size() || items.size() == 0) {
             fitted(dc, items.size() == 0 ? "No alarms yet" : "New alarm", 85, 180, MUTED);
-            row(dc, "+ Add alarm", 130, true, false);
-            footer(dc, "", "START: Add");
+            row(dc, "+ Add alarm", 130, !sleepSelected, false);
+            footer(dc, "", sleepSelected ? "START: Sleep" : "START: Add");
             return;
         }
-        var item = items[_c.selection];
-        text(dc, (_c.selection + 1).toString() + " / " + items.size().toString() +
+        var index = sleepSelected ? 0 : _c.selection;
+        var item = items[index];
+        text(dc, (index + 1).toString() + " / " + items.size().toString() +
             (item["enabled"] ? "   ON" : "   OFF"), 130, 59, Graphics.FONT_XTINY, MUTED);
         // One complete alarm per page gives the time and repeat rule ample room.
         var time = AlarmData.timeLabel(item);
         text(dc, time, 130, 109, numberFont(dc, time, 190), item["enabled"] ? FG : MUTED);
         text(dc, AlarmData.periodLabel(item), 130, 151, Graphics.FONT_XTINY, MUTED);
         fitted(dc, AlarmData.repeatLabel(item), 180, 185, ACCENT);
-        editHint(dc);
-        footer(dc, "", "");
+        if (!sleepSelected) { editHint(dc); }
+        // footer(dc, "", sleepSelected ? "START: Sleep" : "START: Edit");
     }
 
     private function drawTime(dc) {

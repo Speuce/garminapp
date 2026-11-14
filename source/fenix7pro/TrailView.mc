@@ -19,6 +19,10 @@ class TrailView extends WatchUi.View {
         _c = controller;
     }
 
+    function hitSleep(x, y) as Boolean {
+        return _c.state == AlarmController.LIST && x >= 181 && x <= 220 && y >= 23 && y <= 62;
+    }
+
     function onLayout(dc as Graphics.Dc) as Void {
         if (Graphics has :getVectorFont) {
             _rimFont = Graphics.getVectorFont({:face => ["RobotoCondensedBold", "RobotoRegular", "Swiss721Regular"], :size => 11});
@@ -115,14 +119,18 @@ class TrailView extends WatchUi.View {
     }
 
     private function drawList(dc) {
-        title(dc, "JUMPSTART");
+        dc.setColor(LIME, Graphics.COLOR_TRANSPARENT);
+        dc.drawText(113, 29, Graphics.FONT_TINY, "JUMPSTART", Graphics.TEXT_JUSTIFY_CENTER);
+        var sleepSelected = _c.selection == AlarmController.SLEEP_SELECTION;
+        if (sleepSelected) { dc.drawCircle(200, 43, 11); }
+        SleepIcon.draw(dc, 200, 43, 7, sleepSelected ? LIME : MUTED, BG);
         var items = _c.store.records;
         if (items.size() == 0) {
             text(dc, "No alarms yet", 90, Graphics.FONT_SMALL, MUTED);
-            row(dc, "+ Add alarm", 137, true, false);
+            row(dc, "+ Add alarm", 137, !sleepSelected, false);
             return;
         }
-        var first = (_c.selection / 2).toNumber() * 2;
+        var first = sleepSelected ? 0 : (_c.selection / 2).toNumber() * 2;
         for (var i = first; i <= items.size() && i < first + 2; i++) {
             var y = 61 + (i - first) * 76;
             var selected = i == _c.selection;
@@ -139,7 +147,8 @@ class TrailView extends WatchUi.View {
             dc.drawText(203, y + 12, Graphics.FONT_XTINY, AlarmData.periodLabel(item), Graphics.TEXT_JUSTIFY_RIGHT);
             text(dc, (item["enabled"] ? "" : "OFF / ") + AlarmData.repeatLabel(item), y + 48, Graphics.FONT_XTINY, MUTED);
         }
-        text(dc, (_c.selection + 1).toString() + " / " + (items.size() + 1).toString(), 210, Graphics.FONT_XTINY, MUTED);
+        text(dc, sleepSelected ? "Sleep" : (_c.selection + 1).toString() + " / " + (items.size() + 1).toString(),
+            210, Graphics.FONT_XTINY, MUTED);
     }
 
     private function drawTime(dc) {

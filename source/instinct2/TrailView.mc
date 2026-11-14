@@ -15,6 +15,10 @@ class TrailView extends WatchUi.View {
         _c = controller;
     }
 
+    function hitSleep(x, y) as Boolean {
+        return _c.state == AlarmController.LIST && x >= 124 && x <= 164 && y >= 11 && y <= 51;
+    }
+
     private function text(dc, value, x, y, font, color) {
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         dc.drawText(x, y, font, value, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
@@ -44,6 +48,7 @@ class TrailView extends WatchUi.View {
             "Maximum 16 alarms" => "Limit: 16",
             "Alarm limit reached" => "Limit: 16",
             "Alarm no longer exists" => "Alarm missing",
+            "Set an alarm first" => "Set an alarm",
             "Invalid alarm settings" => "Invalid alarm",
             "Save not confirmed" => "Unconfirmed"
         };
@@ -71,11 +76,6 @@ class TrailView extends WatchUi.View {
             // Three dots by UP indicate the hold-menu action without tiny rotated text.
             for (var i = 0; i < 3; i++) { dc.fillCircle(10, 82 + i * 5, 1); }
         }
-        dc.drawArc(88, 88, 85, Graphics.ARC_CLOCKWISE, 324, 307);
-        // Return arrow at the lower-right physical BACK button.
-        dc.drawLine(165, 126, 159, 126);
-        dc.drawLine(159, 126, 162, 123);
-        dc.drawLine(159, 126, 162, 129);
         if (save) {
             dc.drawArc(144, 31, 28, Graphics.ARC_CLOCKWISE, 20, -20);
         }
@@ -128,19 +128,27 @@ class TrailView extends WatchUi.View {
 
     private function drawList(dc) {
         var count = _c.store.records.size();
-        header(dc, "JumpStart", (_c.selection + 1).toString() + "/" + (count + 1).toString());
-        if (_c.selection == count) {
+        var sleepSelected = _c.selection == AlarmController.SLEEP_SELECTION;
+        header(dc, "JumpStart", "");
+        if (sleepSelected) {
+            dc.setColor(FG, BG);
+            dc.drawCircle(144, 31, 16);
+            SleepIcon.draw(dc, 144, 31, 8, FG, BG);
+        }
+        if (_c.selection == count || count == 0) {
             text(dc, count == 0 ? "No alarms yet" : "New alarm", 88, 81, Graphics.FONT_XTINY, FG);
-            row(dc, "+ Add alarm", 120, true);
+            row(dc, "+ Add alarm", 120, !sleepSelected);
             return;
         }
-        var item = _c.store.records[_c.selection];
+        var item = _c.store.records[sleepSelected ? 0 : _c.selection];
         dc.setColor(FG, BG);
-        dc.fillRoundedRectangle(22, 74, 132, 66, 4);
-        text(dc, AlarmData.timeLabel(item), 77, 95, Graphics.FONT_NUMBER_MEDIUM, BG);
-        text(dc, AlarmData.periodLabel(item), 137, 95, Graphics.FONT_XTINY, BG);
-        text(dc, fit(dc, AlarmData.repeatLabel(item), 124), 88, 125, Graphics.FONT_XTINY, BG);
-        if (!item["enabled"]) { text(dc, "Disabled", 88, 155, Graphics.FONT_XTINY, FG); }
+        if (sleepSelected) { dc.drawRoundedRectangle(22, 74, 132, 66, 4); }
+        else { dc.fillRoundedRectangle(22, 74, 132, 66, 4); }
+        var ink = sleepSelected ? FG : BG;
+        text(dc, AlarmData.timeLabel(item), 77, 95, Graphics.FONT_NUMBER_MEDIUM, ink);
+        text(dc, AlarmData.periodLabel(item), 137, 95, Graphics.FONT_XTINY, ink);
+        text(dc, fit(dc, AlarmData.repeatLabel(item), 124), 88, 125, Graphics.FONT_XTINY, ink);
+        if (!sleepSelected && !item["enabled"]) { text(dc, "Disabled", 88, 155, Graphics.FONT_XTINY, FG); }
     }
 
     private function drawTime(dc) {
