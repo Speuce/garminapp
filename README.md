@@ -138,7 +138,7 @@ PCA + impact filter to Monkey C for physical-device testing: PC3 must explain at
 0.6% of variance over the candidate plus eight earlier samples. A fixed 74-sample
 buffer and a 3x3 positive-semidefinite check implement the eigenvalue threshold.
 The impact filter requires at least 0.3 g/sample RMS change outside PC1 and at
-least 8% of Hann-windowed spectral energy in 3–10 Hz (relative to bins at or above
+least 8% of Hann-windowed spectral energy in 3-10 Hz (relative to bins at or above
 0.5 Hz). Jacobi rotations find PC1; Goertzel evaluates the same bins as the Python
 FFT. The dismissal target remains five. Python prototypes stay local; simulator
 testing of this port is explicitly skipped. This stricter version retained 20/20
@@ -149,6 +149,15 @@ requests one-second batches, and the impact check uses the existing candidate
 window without waiting for additional samples. Shortening confirmation was not
 included, to preserve rejection of isolated arm movements.
 The demo branch `more-forerunner` remains on `97c29c3` for rollback.
+
+The current experimental build also emits bounded `JJTRACE` diagnostics for up
+to 60 seconds per ringing session: raw XYZ batches, their arrival times and
+vibration commands. It does not log heart rate. Create `GARMIN/APPS/LOGS/JumpStart.TXT`
+to capture them, then collect that file and its rotated `.BAK` immediately after
+testing. Detection is still experimental: the user reports missed jacks and
+false arm-wave counts on hardware. These traces are intended to investigate
+that failure, including possible interference from the alarm vibration motor;
+no further detection fix is claimed yet.
 
 ## Build and test
 

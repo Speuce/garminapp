@@ -16,6 +16,7 @@ class RingView extends WatchUi.View {
     private var _preview as Boolean;
     private var _receivedSamples as Boolean = false;
     private var _heart as HeartRateMonitor = new HeartRateMonitor(null);
+    private var _trace as MotionTrace = new MotionTrace();
 
     function initialize(preview as Boolean) {
         View.initialize();
@@ -28,6 +29,7 @@ class RingView extends WatchUi.View {
         _heart.start();
         _sensorError = false;
         _receivedSamples = false;
+        _trace.start(_preview);
         try {
             Sensor.registerSensorDataListener(method(:onSensorData), {
                 :period => 1,
@@ -48,6 +50,7 @@ class RingView extends WatchUi.View {
 
     function onHide() as Void {
         _challenge.stop();
+        _trace.stop();
         _heart.stop();
         if (_listening) {
             Sensor.unregisterSensorDataListener();
@@ -70,6 +73,7 @@ class RingView extends WatchUi.View {
         var accel = data.accelerometerData;
         if (!_listening || accel == null) { return; }
         _receivedSamples = true;
+        _trace.samples(accel.x, accel.y, accel.z);
         var previous = _challenge.count();
         for (var i = 0; i < accel.x.size(); i++) {
             if (_challenge.add(accel.x[i], accel.y[i], accel.z[i])) {
@@ -109,6 +113,7 @@ class RingView extends WatchUi.View {
     private function alert() as Void {
         if (Attention has :backlight) { Attention.backlight(true); }
         if (Attention has :vibrate) {
+            _trace.vibration();
             Attention.vibrate([
                 new Attention.VibeProfile(100, 400),
                 new Attention.VibeProfile(0, 150),
