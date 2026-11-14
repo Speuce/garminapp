@@ -27,3 +27,6 @@ Desktop.ini
 *.swp
 *.swo
 *~
+
+# Python virtualenv for recording analysis tools
+.venv/

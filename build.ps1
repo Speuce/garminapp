@@ -16,7 +16,7 @@ if (!(Test-Path -LiteralPath $sdkConfig)) { throw 'Install and select a Connect 
 $sdk = (Get-Content -LiteralPath $sdkConfig -Raw).Trim()
 $key = Join-Path $PSScriptRoot 'developer_key'
 if (!(Test-Path -LiteralPath $key)) { throw 'Place your Connect IQ developer signing key at developer_key.' }
-$output = Join-Path $PSScriptRoot 'bin\EmptyApp.prg'
+$output = Join-Path $PSScriptRoot 'bin\JUMPING.prg'
 New-Item -ItemType Directory -Force -Path (Split-Path $output) | Out-Null
 Push-Location $PSScriptRoot
 try {
