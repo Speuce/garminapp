@@ -3,7 +3,7 @@ import Toybox.Lang;
 // Owns one ringing session. Detection is identical to the validated counter;
 // only an active session can credit reps or complete the alarm.
 class AlarmChallenge {
-    const TARGET = 20;
+    const TARGET = 5;
     private var _counter as RepCounter = new RepCounter();
     private var _active as Boolean = false;
 

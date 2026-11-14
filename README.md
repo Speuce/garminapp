@@ -1,7 +1,7 @@
 # JumpStart
 
 A Connect IQ alarm app for Instinct 2 (`instinct2`) and fenix 7 Pro (`fenix7pro`).
-Saved alarms start a challenge that stops after 20 confirmed jumping jacks.
+Saved alarms start a challenge that stops after 5 confirmed jumping jacks.
 
 ## On the watch
 
@@ -63,7 +63,9 @@ Integration validation (2026-11-14, SDK 9.1.0): all 31 native tests pass on both
 devices. An alarm saved through the Instinct editor triggered the background wake
 prompt at its scheduled minute after the app was closed. Accepting the prompt and
 replaying the negative recording followed by the positive recording kept the count
-at zero for the negative segment and dismissed the alarm at 20 jacks. A saved alarm
+at zero for the negative segment and dismissed the alarm at the then-current target
+of 20 jacks. The target is now 5; the native challenge test verifies completion
+exactly on the fifth recorded jack and ignores subsequent samples. A saved alarm
 also triggered automatically in the foreground on fenix 7 Pro; its list, editor,
 review and challenge layouts were inspected. The fenix simulator delivers generated
 accelerometer samples, but did not deliver this FIT recording through its sensor

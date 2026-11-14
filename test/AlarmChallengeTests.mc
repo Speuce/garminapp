@@ -16,25 +16,26 @@ class ChallengeSamples {
 }
 
 (:test)
-function alarmCompletesOnlyOnTwentiethRecordedJack(logger as Logger) as Boolean {
+function alarmCompletesOnlyOnFifthRecordedJack(logger as Logger) as Boolean {
     var challenge = new AlarmChallenge();
     challenge.start();
     var sample = 0;
     var completions = 0;
+    Test.assertEqual(challenge.target(), 5);
     for (var block = 0; block < 5; block++) {
         var xyz = RecordedSamples.normal(block);
         for (var i = 0; i < xyz.size(); i += 3) {
             var completed = challenge.add(xyz[i], xyz[i + 1], xyz[i + 2]);
-            Test.assertEqual(completed, sample == 842);
-            if (sample < 842) { Test.assert(challenge.count() < 20); }
+            Test.assertEqual(completed, sample == 306);
+            if (sample < 306) { Test.assert(challenge.count() < 5); }
             if (completed) { completions++; }
             sample++;
         }
     }
     Test.assertEqual(completions, 1);
-    Test.assertEqual(challenge.count(), 20);
+    Test.assertEqual(challenge.count(), 5);
     Test.assertEqual(ChallengeSamples.recording(challenge, true), 0);
-    Test.assertEqual(challenge.count(), 20);
+    Test.assertEqual(challenge.count(), 5);
     return true;
 }
 
