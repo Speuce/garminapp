@@ -1,18 +1,18 @@
-// ABOUTME: Records a training activity whose FIT file includes the raw accelerometer stream via SensorLogging.
-// ABOUTME: Markers become FIT laps; the saved file lands in GARMIN/ACTIVITY and syncs to Garmin Connect.
+// ABOUTME: Records a training activity whose FIT file includes the raw accelerometer stream via SensorLogging,
+// ABOUTME: while counting reps live from the same sensor. Markers become FIT laps; the FIT syncs to Garmin Connect.
 import Toybox.Activity;
 import Toybox.ActivityRecording;
 import Toybox.Attention;
 import Toybox.Lang;
+import Toybox.Sensor;
 import Toybox.SensorLogging;
-import Toybox.Timer;
 import Toybox.WatchUi;
 
 class AccelerometerRecorder {
 
     private var _session as ActivityRecording.Session?;
     private var _sensorLogger as SensorLogging.SensorLogger?;
-    private var _screenRefresh as Timer.Timer = new Timer.Timer();
+    private var _repCounter as RepCounter = new RepCounter();
     private var _markerCount as Number = 0;
 
     function initialize() {
@@ -24,6 +24,10 @@ class AccelerometerRecorder {
 
     function markerCount() as Number {
         return _markerCount;
+    }
+
+    function repCount() as Number {
+        return _repCounter.count();
     }
 
     function sampleCount() as Number {
@@ -47,8 +51,8 @@ class AccelerometerRecorder {
         }
         session.stop();
         session.save();
+        Sensor.unregisterSensorDataListener();
         _session = null;
-        _screenRefresh.stop();
         buzz(300);
     }
 
@@ -63,7 +67,15 @@ class AccelerometerRecorder {
         WatchUi.requestUpdate();
     }
 
-    function refreshScreen() as Void {
+    function onSensorData(data as Sensor.SensorData) as Void {
+        var accel = data.accelerometerData;
+        if (accel == null) {
+            return;
+        }
+        var y = accel.y;
+        for (var i = 0; i < y.size(); i++) {
+            _repCounter.add(y[i]);
+        }
         WatchUi.requestUpdate();
     }
 
@@ -79,7 +91,11 @@ class AccelerometerRecorder {
         _sensorLogger = sensorLogger;
         _session = session;
         _markerCount = 0;
-        _screenRefresh.start(method(:refreshScreen), 1000, true);
+        _repCounter = new RepCounter();
+        Sensor.registerSensorDataListener(method(:onSensorData), {
+            :period => 1,
+            :accelerometer => {:enabled => true, :sampleRate => 25}
+        });
         buzz(300);
     }
 
