@@ -17,6 +17,10 @@ class Recording {
         return _recording;
     }
 
+    function sampleCount() as Number {
+        return _sampleCount;
+    }
+
     function markerCount() as Number {
         return _markerCount;
     }

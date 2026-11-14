@@ -1,15 +1,16 @@
+// ABOUTME: Main screen showing whether recording is on, samples captured, and markers dropped.
+// ABOUTME: The sample count rising each second confirms the accelerometer is delivering data.
 import Toybox.Graphics;
+import Toybox.Lang;
 import Toybox.WatchUi;
 
 class jumpingView extends WatchUi.View {
 
-    function initialize() {
-        View.initialize();
-    }
+    private var _recording as Recording;
 
-    // Load your resources here
-    function onLayout(dc as Dc) as Void {
-        setLayout(Rez.Layouts.MainLayout(dc));
+    function initialize(recording as Recording) {
+        View.initialize();
+        _recording = recording;
     }
 
     // Called when this View is brought to the foreground. Restore
@@ -20,8 +21,18 @@ class jumpingView extends WatchUi.View {
 
     // Update the view
     function onUpdate(dc as Dc) as Void {
-        // Call the parent onUpdate function to redraw the layout
-        View.onUpdate(dc);
+        dc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+        dc.clear();
+        var x = dc.getWidth() / 2;
+        var y = dc.getHeight() / 2;
+        var lineHeight = dc.getFontHeight(Graphics.FONT_SMALL);
+        var lines = _recording.isRecording()
+            ? ["REC", "Samples " + _recording.sampleCount(), "Marks " + _recording.markerCount(), "BACK: mark"]
+            : ["Ready", "START: record"];
+        var top = y - lines.size() * lineHeight / 2;
+        for (var i = 0; i < lines.size(); i++) {
+            dc.drawText(x, top + i * lineHeight, Graphics.FONT_SMALL, lines[i], Graphics.TEXT_JUSTIFY_CENTER);
+        }
     }
 
     // Called when this View is removed from the screen. Save the

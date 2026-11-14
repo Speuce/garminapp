@@ -29,6 +29,7 @@ function samplesAreNumberedAcrossBatches(logger as Logger) as Boolean {
     Test.assertEqual(first[0], "s,0,10,-20,980");
     Test.assertEqual(first[1], "s,1,11,-21,981");
     Test.assertEqual(second[0], "s,2,12,-22,982");
+    Test.assertEqual(recording.sampleCount(), 3);
     return true;
 }
 
