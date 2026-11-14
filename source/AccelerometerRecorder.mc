@@ -72,9 +72,11 @@ class AccelerometerRecorder {
         if (accel == null) {
             return;
         }
+        var x = accel.x;
         var y = accel.y;
+        var z = accel.z;
         for (var i = 0; i < y.size(); i++) {
-            _repCounter.add(y[i]);
+            _repCounter.add(x[i], y[i], z[i]);
         }
         WatchUi.requestUpdate();
     }

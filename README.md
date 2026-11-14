@@ -8,9 +8,24 @@ accelerometer stream (via `SensorLogging`) and shows a live rep count. BACK adds
 
 ## Detector
 
-`source/RepCounter.mc` smooths the accelerometer Y axis and counts a rep each time it rises
-above +1000 mg and then falls below -400 mg. It was tuned on one recorded set of 20 normal jacks.
-It does not yet reject wrist raises (5 raises counted as 5) or marching (1 false rep).
+`source/RepCounter.mc` runs the adaptive detector on the watch. Each callback feeds
+calibrated X/Y/Z samples in order at the requested 25 Hz. The counter smooths all
+three axes, finds candidate movements from a rise and a return relative to the
+current peak, and checks movement duration, X/Z range, vector magnitude and shape.
+Candidate timeouts and repetition spacing adapt to the observed cadence.
+
+Three qualifying cycles confirm a run; the initial count then advances by three.
+Subsequent qualifying cycles add one. Pauses clear pending confirmation, and the
+last three accepted movement scores set the continuation strength threshold.
+The first 20 samples estimate resting gravity only when they appear stationary;
+otherwise the counter keeps the nominal milli-g scale. All state has fixed size,
+with no per-sample arrays or growing sample history.
+
+The checked-in Monkey C simulator tests replay both labelled XYZ recordings:
+20/20 normal jacks and zero counts for watch checks/marching. They also verify
+the count increment at every sample against the reference, weak returns, changing
+cadence, calibration, pauses and timeout recovery. These recordings cover one
+left-wrist Instinct 2 user; they do not establish accuracy for every movement style.
 
 ## Build, test and install
 
@@ -24,25 +39,30 @@ make test      # Run unit tests (simulator must be open: make simulator)
 make install   # Copy to a USB-mounted watch at /Volumes/GARMIN, clean macOS ._ files, eject
 ```
 
-Windows (fenix 7 Pro):
+Windows (defaults to fenix 7 Pro; builds into `bin/<device>/`):
 
 ```powershell
-.\build.ps1          # Build bin/JUMPING.prg
+.\build.ps1          # Build bin/fenix7pro/JUMPING.prg
 .\build.ps1 -Run     # Build and launch in the simulator
 .\build.ps1 -Release # Build a release version
+.\build.ps1 -Test    # Run the Monkey C simulator tests
+.\build.ps1 -Device instinct2 -Test
+.\build.ps1 -Device instinct2 -Run
 ```
+
+Use `-Key <path>` if the signing key is outside this checkout. `-TestName <name>`
+with `-Test` runs an individual test. The script checks the simulator's test summary
+and saves it as `bin/<device>/test-results.txt`.
 
 In VS Code, use **Run Jumping App** from Run and Debug (F5).
 
 ## Recordings
 
 `recordings/` holds FIT files from the watch and `labels.csv` describing what each contains.
-`tools/fit_fixture.py` turns a recording into a Monkey C test fixture:
-
-```sh
-python3 -m venv .venv && .venv/bin/pip install fitparse
-.venv/bin/python tools/fit_fixture.py recordings/<file>.fit <CONSTANT_NAME> > test/<Name>.mc
-```
+`test/RecordedSamples.mc` contains the labelled recordings as flattened XYZ triples,
+in small blocks to stay within SDK compiler limits. Test fixtures are excluded from
+production builds. Python analysis and cross-language validation tools remain local;
+Python is not required to build, test in Connect IQ, or run the watch app.
 
 On the Instinct 2, accelerometer sample timestamps in the FIT file are invalid; use message
 order (25 samples per message, about 25-26 Hz). Lap markers lag the sensor data by 1-2 s.
