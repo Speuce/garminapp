@@ -1,3 +1,6 @@
 project.manifest = manifest.xml
-base.sourcePath = source
+base.sourcePath = source/common
 base.resourcePath = resources
+fenix7pro.sourcePath = $(base.sourcePath);source/fenix7pro
+instinct2.sourcePath = $(base.sourcePath);source/instinct2
+instinct2.resourcePath = $(base.resourcePath);resources-instinct2
