@@ -148,6 +148,13 @@ class AlarmScheduler {
         return fireAt != null && now >= fireAt && now < fireAt + RING_WINDOW;
     }
 
+    // Sleep mode needs no per-second redraws. Wake no later than the alarm,
+    // checking at least once per minute for clock/schedule changes.
+    function nextCheckDelay(now as Number, sleeping as Boolean) as Number {
+        if (!sleeping || fireAt == null || fireAt <= now + 1) { return 1000; }
+        return fireAt - now >= 60 ? 60000 : (fireAt - now) * 1000;
+    }
+
     function dismiss(now as Number) as Void {
         if (testAt != null && testAt <= now) { testAt = null; }
         // Disable completed one-time alarms; preserve all repeating settings.

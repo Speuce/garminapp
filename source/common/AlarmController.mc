@@ -4,6 +4,8 @@ import Toybox.Time;
 // A small state machine shared by the button delegate and simulator tests.
 // Drafts never modify saved records until the review screen is confirmed.
 class AlarmController {
+    static const SLEEP_SELECTION = -1;
+    static const SLEEP_COMMAND = 2;
     enum {
         LIST, ACTIONS, HOUR, MINUTE, PERIOD, PATTERN, DAYS, INTERVAL,
         YEAR, MONTH, DAY, REVIEW, DELETE, DISCARD, TOOLS
@@ -60,7 +62,7 @@ class AlarmController {
     function move(direction) {
         notice = null;
         if (!store.readable) { return; }
-        if (state == LIST) { selection = wrap(selection + direction, 0, store.records.size()); }
+        if (state == LIST) { selection = wrap(selection + direction, SLEEP_SELECTION, store.records.size()); }
         else if (state == ACTIONS) { cursor = wrap(cursor + direction, 0, 5); }
         else if (state == TOOLS) { cursor = wrap(cursor + direction, 0, 1); }
         else if (state == PATTERN) { cursor = wrap(cursor + direction, 0, PATTERNS.size() - 1); }
@@ -85,7 +87,10 @@ class AlarmController {
     function select() {
         notice = null;
         if (!store.readable) { store.load(); return; }
-        if (state == LIST) { beginEdit(selection); }
+        if (state == LIST) {
+            if (selection == SLEEP_SELECTION) { command = SLEEP_COMMAND; }
+            else { beginEdit(selection); }
+        }
         else if (state == ACTIONS) { selectAction(); }
         else if (state == TOOLS) { command = cursor == 0 ? 1 : 300; returnToList(null); }
         else if (state == HOUR) { go(MINUTE); }
@@ -157,7 +162,7 @@ class AlarmController {
         if (!store.readable) { return; }
         notice = null;
         if (state == LIST) {
-            if (selection < store.records.size()) { state = ACTIONS; cursor = 0; }
+            if (selection >= 0 && selection < store.records.size()) { state = ACTIONS; cursor = 0; }
             else { state = TOOLS; cursor = 0; }
         } else if (state == DAYS) { go(INTERVAL); }
     }

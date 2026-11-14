@@ -143,3 +143,28 @@ function staleAndCancelledOccurrencesDoNotRing(logger as Logger) as Boolean {
     Test.assert(new AlarmScheduler(store,backend,now+901).fireAt == null);
     return true;
 }
+
+(:test)
+function sleepTimerWakesAtAlarmAndPreservesSchedule(logger as Logger) as Boolean {
+    var backend = new ScheduleMemory();
+    var store = new AlarmStore(backend, "alarms");
+    var now = ScheduleFixture.at(2026,11,14,7,0);
+    var scheduler = new AlarmScheduler(store, backend, now);
+    Test.assertEqual(scheduler.nextCheckDelay(now, true), 1000);
+    var item = ScheduleFixture.alarm(); item["days"] = 127;
+    store.save(item); scheduler.refresh(now);
+    var alarm = now + 900;
+    Test.assertEqual(scheduler.fireAt, alarm);
+    Test.assertEqual(scheduler.nextCheckDelay(now, true), 60000);
+    Test.assertEqual(scheduler.nextCheckDelay(alarm - 35, true), 35000);
+    Test.assertEqual(scheduler.nextCheckDelay(alarm - 1, true), 1000);
+    Test.assert(!scheduler.due(alarm - 1));
+    Test.assert(scheduler.due(alarm));
+    Test.assertEqual(scheduler.nextCheckDelay(alarm, true), 1000);
+    Test.assertEqual(scheduler.nextCheckDelay(now, false), 1000);
+    Test.assertEqual(scheduler.fireAt, alarm);
+    Test.assertEqual(store.records.size(), 1);
+    scheduler.armTest(now + 20, now);
+    Test.assertEqual(scheduler.nextCheckDelay(now, true), 20000);
+    return true;
+}

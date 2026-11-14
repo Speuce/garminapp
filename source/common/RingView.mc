@@ -139,8 +139,20 @@ class RingView extends WatchUi.View {
 
 class RingDelegate extends WatchUi.BehaviorDelegate {
     function initialize() { BehaviorDelegate.initialize(); }
+    // Consume any LIGHT/POWER events delivered to the app. Firmware-owned
+    // shortcuts (controls, assistance, shutdown) may never reach this delegate.
+    function onKeyPressed(event as WatchUi.KeyEvent) as Boolean {
+        return event.getKey() == WatchUi.KEY_LIGHT || event.getKey() == WatchUi.KEY_POWER;
+    }
+    function onKeyReleased(event as WatchUi.KeyEvent) as Boolean {
+        return onKeyPressed(event);
+    }
+    function onKey(event as WatchUi.KeyEvent) as Boolean { return true; }
     function onSelect() as Boolean { return true; }
     function onMenu() as Boolean { return true; }
+    function onPreviousPage() as Boolean { return true; }
+    function onNextPage() as Boolean { return true; }
+    function onTap(event as WatchUi.ClickEvent) as Boolean { return true; }
     function onBack() as Boolean {
         (WatchUi.getCurrentView()[0] as RingView).cancel();
         return true;

@@ -95,6 +95,48 @@ function buttonSaveCancelDisableDelete(logger as Test.Logger) as Boolean {
 }
 
 (:test)
+function moonShortcutPreservesAlarmsAndNavigation(logger as Test.Logger) as Boolean {
+    var backend = new MemoryAlarmStorage();
+    var store = new AlarmStore(backend, "test");
+    Test.assert(store.save(AlarmData.create()));
+    var c = new AlarmController(store);
+    var writes = backend.writes;
+    c.move(-1); // UP from the first alarm focuses the moon.
+    Test.assertEqual(c.selection, AlarmController.SLEEP_SELECTION);
+    c.select();
+    Test.assertEqual(c.command, AlarmController.SLEEP_COMMAND);
+    Test.assertEqual(c.state, AlarmController.LIST);
+    Test.assertEqual(backend.writes, writes);
+    Test.assertEqual(store.records.size(), 1);
+    c.menu(); // Holding MENU on the icon must not index alarm -1.
+    Test.assertEqual(c.state, AlarmController.TOOLS);
+    c.back();
+    c.move(1);
+    Test.assertEqual(c.selection, 0);
+    c.move(1);
+    Test.assertEqual(c.selection, 1); // Add alarm remains accessible.
+    c.move(1);
+    Test.assertEqual(c.selection, AlarmController.SLEEP_SELECTION);
+    c.move(-1);
+    Test.assertEqual(c.selection, 1);
+    return true;
+}
+
+(:test)
+function emptyListMoonDoesNotCreateAnAlarm(logger as Test.Logger) as Boolean {
+    var backend = new MemoryAlarmStorage();
+    var c = new AlarmController(new AlarmStore(backend, "test"));
+    c.move(-1);
+    c.select();
+    Test.assertEqual(c.command, AlarmController.SLEEP_COMMAND);
+    Test.assertEqual(backend.writes, 0);
+    Test.assertEqual(c.store.records.size(), 0);
+    c.move(1); c.select();
+    Test.assertEqual(c.state, AlarmController.HOUR);
+    return true;
+}
+
+(:test)
 function customRulesAndValidation(logger as Test.Logger) as Boolean {
     var c = new AlarmController(new AlarmStore(new MemoryAlarmStorage(), "test"));
     c.beginEdit(0);

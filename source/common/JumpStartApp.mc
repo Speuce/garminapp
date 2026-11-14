@@ -15,6 +15,7 @@ class JumpStartApp extends Application.AppBase {
     private var _scheduler;
     private var _timer;
     private var _ringing as Boolean = false;
+    private var _sleeping as Boolean = false;
 
     function initialize() { AppBase.initialize(); }
 
@@ -40,11 +41,11 @@ class JumpStartApp extends Application.AppBase {
         showTestTime();
         registerWake();
         _timer = new Timer.Timer();
-        _timer.start(method(:onTick), 1000, true);
         if (_scheduler.due(Time.now().value())) {
             _ringing = true;
             return [new RingView(false), new RingDelegate()];
         }
+        scheduleTick();
         return [new TrailView(_controller), new TrailDelegate(_controller)];
     }
 
@@ -70,11 +71,13 @@ class JumpStartApp extends Application.AppBase {
         var command = _controller.command;
         _controller.command = 0;
         if (command == 1) { showRing(true); }
+        else if (command == AlarmController.SLEEP_COMMAND) { startSleep(); }
         else if (command == 300) {
             _scheduler.armTest(Time.now().value() + 300, Time.now().value());
             showTestTime();
             registerWake();
         }
+        scheduleTick();
     }
 
     (:typecheck(disableBackgroundCheck))
@@ -90,11 +93,40 @@ class JumpStartApp extends Application.AppBase {
         if (_ringing) { return; }
         if (_scheduler.refresh(Time.now().value())) { registerWake(); }
         if (_scheduler.due(Time.now().value())) { showRing(false); }
+        else { scheduleTick(); }
+    }
+
+    (:typecheck(disableBackgroundCheck))
+    function scheduleTick() as Void {
+        _timer.stop();
+        if (!_ringing) {
+            _timer.start(method(:onTick), _scheduler.nextCheckDelay(Time.now().value(), _sleeping), false);
+        }
+    }
+
+    (:typecheck(disableBackgroundCheck))
+    function startSleep() as Void {
+        if (_scheduler.due(Time.now().value())) { showRing(false); return; }
+        if (_scheduler.fireAt == null) {
+            _controller.notice = "Set an alarm first";
+            return;
+        }
+        _sleeping = true;
+        WatchUi.switchToView(new SleepView(_scheduler.fireAt), new SleepDelegate(), WatchUi.SLIDE_IMMEDIATE);
+    }
+
+    (:typecheck(disableBackgroundCheck))
+    function finishSleep() as Void {
+        _sleeping = false;
+        WatchUi.switchToView(new TrailView(_controller), new TrailDelegate(_controller), WatchUi.SLIDE_IMMEDIATE);
+        scheduleTick();
     }
 
     (:typecheck(disableBackgroundCheck))
     function showRing(preview as Boolean) as Void {
+        _sleeping = false;
         _ringing = true;
+        _timer.stop();
         WatchUi.switchToView(new RingView(preview), new RingDelegate(), WatchUi.SLIDE_IMMEDIATE);
     }
 
@@ -103,6 +135,7 @@ class JumpStartApp extends Application.AppBase {
         if (!preview) { _scheduler.dismiss(Time.now().value()); registerWake(); }
         _ringing = false;
         WatchUi.switchToView(new TrailView(_controller), new TrailDelegate(_controller), WatchUi.SLIDE_IMMEDIATE);
+        scheduleTick();
     }
 
     (:typecheck(disableBackgroundCheck))
