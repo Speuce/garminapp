@@ -223,4 +223,3 @@ class TrailView extends WatchUi.View {
         }
     }
 }
-
