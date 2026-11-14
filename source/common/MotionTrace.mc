@@ -16,7 +16,7 @@ class MotionTrace {
         _remaining = 1500;
         _index = 0;
         _active = true;
-        System.println("JJTRACE,BEGIN,impact-v1," + Time.now().value() + "," +
+        System.println("JJTRACE,BEGIN,impact-v2-pc60," + Time.now().value() + "," +
             System.getTimer() + "," + (preview ? "test" : "scheduled"));
     }
 

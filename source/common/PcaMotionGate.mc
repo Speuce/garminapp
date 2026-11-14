@@ -6,6 +6,9 @@ import Toybox.Math;
 class PcaMotionGate {
     private const CAPACITY = 74; // 66 candidate samples plus eight preceding it.
     private const MIN_FRACTION = 0.006;
+    // Require a coherent primary cycle as well as non-planar impact motion.
+    // Device arm-wave traces spread too much variance across competing axes.
+    private const MIN_DOMINANT_FRACTION = 0.60;
     private const MIN_RESIDUAL_CHANGE_SQUARED = 0.09; // (0.3 g/sample)^2
     private const MIN_HIGH_FREQUENCY_FRACTION = 0.08;
     private var _samples as Array<Number> = new [222] as Array<Number>;
@@ -86,15 +89,17 @@ class PcaMotionGate {
         if (a * (d * f - e * e) - b * (b * f - c * e) + c * (b * e - c * d) < 0.0) {
             return false;
         }
-        findPrincipalAxis(xx / trace, xy / trace, xz / trace,
-            yy / trace, yz / trace, zz / trace);
+        if (findPrincipalAxis(xx / trace, xy / trace, xz / trace,
+            yy / trace, yz / trace, zz / trace) < MIN_DOMINANT_FRACTION) {
+            return false;
+        }
         return hasImpact(n, gravityScale);
     }
 
     // Jacobi diagonalization of the symmetric 3x3 covariance. A fixed iteration
     // limit keeps execution bounded; only the largest component's axis is used.
     private function findPrincipalAxis(xx as Float, xy as Float, xz as Float,
-                                        yy as Float, yz as Float, zz as Float) as Void {
+                                        yy as Float, yz as Float, zz as Float) as Float {
         _matrix[0] = xx; _matrix[1] = xy; _matrix[2] = xz;
         _matrix[3] = xy; _matrix[4] = yy; _matrix[5] = yz;
         _matrix[6] = xz; _matrix[7] = yz; _matrix[8] = zz;
@@ -145,6 +150,7 @@ class PcaMotionGate {
         _axisX = _basis[column];
         _axisY = _basis[3 + column];
         _axisZ = _basis[6 + column];
+        return _matrix[column * 3 + column];
     }
 
     private function hasImpact(n as Number, gravityScale as Float) as Boolean {

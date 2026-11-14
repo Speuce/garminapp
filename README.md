@@ -157,7 +157,13 @@ to capture them, then collect that file and its rotated `.BAK` immediately after
 testing. Detection is still experimental: the user reports missed jacks and
 false arm-wave counts on hardware. These traces are intended to investigate
 that failure, including possible interference from the alarm vibration motor;
-no further detection fix is claimed yet.
+The latest device-trace adjustment additionally requires PC1 to explain at least
+60% of variance. Local replay changes the captured arm-wave tail from six counts
+to zero, while preserving five jacks in the latest full positive run and 20/20 in
+the original recording. The negative capture starts at sample 200 because its
+earlier log rotated away, and these traces were used to choose the threshold;
+this is a targeted regression check, not independent validation or a guarantee
+that all arm waves are rejected. Simulator testing remains skipped by request.
 
 ## Build and test
 

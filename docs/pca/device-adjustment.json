@@ -1,0 +1,70 @@
+{
+  "change": "Require PC1 variance fraction >= 0.60 in addition to the existing PCA + impact checks.",
+  "data_provenance": "User labelled the last complete test as true jacks and the preceding test as arm waves.",
+  "limitations": [
+    "Negative log contains only samples 200 through 449, so full-session rejection is unverified.",
+    "These traces were used to select the threshold and are not independent validation.",
+    "No simulator test was run; release compilation and local Python replay only."
+  ],
+  "cases": [
+    {
+      "case": "arm_waves_captured_tail",
+      "before": 6,
+      "after": 0,
+      "expected": 0,
+      "confirmation_samples": []
+    },
+    {
+      "case": "latest_full_jacks",
+      "before": 5,
+      "after": 5,
+      "expected": 5,
+      "confirmation_samples": [
+        78,
+        78,
+        78,
+        102,
+        148
+      ]
+    },
+    {
+      "case": "original_jacks",
+      "before": 20,
+      "after": 20,
+      "expected": 20,
+      "confirmation_samples": [
+        230,
+        230,
+        230,
+        268,
+        306,
+        341,
+        376,
+        413,
+        446,
+        483,
+        516,
+        549,
+        583,
+        617,
+        654,
+        692,
+        729,
+        765,
+        802,
+        842
+      ]
+    },
+    {
+      "case": "original_watch_checks_marching",
+      "before": 0,
+      "after": 0,
+      "expected": 0,
+      "confirmation_samples": []
+    }
+  ],
+  "source_log_sha256": {
+    "JUMPSTART.BAK": "e251234dfa5dd3fadf099e829ab0e794e0fda67d13122856ec5a6b515e17a27e",
+    "JUMPSTART.TXT": "7732381681a28f670a8c77d572601e9378a6f1ef15dfcfd6f0c479b832b3ad6c"
+  }
+}
